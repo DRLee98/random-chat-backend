@@ -6,7 +6,7 @@ import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
 
 @Resolver()
 export class UserResolver {
-  //   constructor(private userService: UserService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Query(() => User)
   me() {
