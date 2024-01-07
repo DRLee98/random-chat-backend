@@ -17,15 +17,13 @@ export class UserResolver {
   async createUser(
     @Args('input') input: CreateUserInput,
   ): Promise<CreateUserOutput> {
-    console.log(input);
-    return;
+    return this.userService.createUser(input);
   }
 
   @Mutation(() => UpdateUserOutput)
   async updateUser(
     @Args('input') input: UpdateUserInput,
   ): Promise<UpdateUserOutput> {
-    console.log(input);
-    return;
+    return this.userService.updateUser(input);
   }
 }
