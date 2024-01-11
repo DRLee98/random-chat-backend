@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from './entites/user.entity';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
+import { randomNameGenerator } from './utils/nameGenerator';
 
 @Injectable()
 export class UserService {
@@ -18,13 +19,25 @@ export class UserService {
         where: { socialId: input.socialId },
       });
       if (findUser) {
-        // TODO: 기존에 가입된 계정으로 로그인 처리
         return {
           ok: false,
           error: '이미 가입된 계정입니다.',
         };
       }
-      const user = this.userRepository.create({ ...input });
+
+      let nickname = '';
+      while (true) {
+        nickname = randomNameGenerator();
+        const findNickname = await this.userRepository.findOne({
+          where: { nickname },
+        });
+        if (!findNickname) break;
+      }
+
+      const user = this.userRepository.create({
+        ...input,
+        nickname,
+      });
 
       await this.userRepository.save(user);
 
@@ -54,5 +67,16 @@ export class UserService {
         error,
       };
     }
+  }
+
+  async findUserBySocialId(
+    socialId: String,
+    socialPlatform: String,
+  ): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: { socialId, socialPlatform },
+    });
+    if (user) return user;
+    return null;
   }
 }

@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { User } from './user/entites/user.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { User } from './user/entites/user.entity';
       autoSchemaFile: true,
     }),
     UserModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

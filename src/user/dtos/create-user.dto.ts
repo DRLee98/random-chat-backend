@@ -6,7 +6,6 @@ import { User } from '../entites/user.entity';
 export class CreateUserInput extends PickType(User, [
   'socialId',
   'socialPlatform',
-  'nickname',
 ]) {}
 
 @ObjectType()

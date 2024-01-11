@@ -15,7 +15,7 @@ export class User extends CoreEntity {
   socialPlatform: String;
 
   @Field(() => String)
-  @Column()
+  @Column({ unique: true })
   nickname: String;
 
   @Field(() => String, { nullable: true })
