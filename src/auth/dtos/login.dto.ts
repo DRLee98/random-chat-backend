@@ -11,5 +11,5 @@ export class LoginInput extends PickType(User, [
 @ObjectType()
 export class LoginOutput extends CoreOutPut {
   @Field(() => String, { nullable: true })
-  token?: String;
+  token?: string;
 }

@@ -3,8 +3,8 @@ import { Field, ObjectType } from '@nestjs/graphql';
 @ObjectType()
 export class CoreOutPut {
   @Field(() => Boolean)
-  ok: Boolean;
+  ok: boolean;
 
   @Field(() => String, { nullable: true })
-  error?: String;
+  error?: string;
 }

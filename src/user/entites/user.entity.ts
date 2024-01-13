@@ -8,27 +8,27 @@ import { Column, Entity, ManyToMany } from 'typeorm';
 export class User extends CoreEntity {
   @Field(() => String)
   @Column({ unique: true })
-  socialId: String;
+  socialId: string;
 
   @Field(() => String)
   @Column()
-  socialPlatform: String;
+  socialPlatform: string;
 
   @Field(() => String)
   @Column({ unique: true })
-  nickname: String;
+  nickname: string;
 
   @Field(() => String, { nullable: true })
   @Column({ nullable: true })
-  bio?: String;
+  bio?: string;
 
   @Field(() => String, { nullable: true })
   @Column({ nullable: true })
-  profileUrl?: String;
+  profileUrl?: string;
 
   @Field(() => Boolean)
   @Column({ default: true })
-  allowMessage: Boolean;
+  allowMessage: boolean;
 
   @Field(() => [User])
   @ManyToMany((type) => User)
