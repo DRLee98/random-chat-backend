@@ -69,6 +69,13 @@ export class UserService {
     }
   }
 
+  async findUserById(id: number): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
+    return user ?? null;
+  }
+
   async findUserBySocialId(
     socialId: string,
     socialPlatform: string,
@@ -76,7 +83,6 @@ export class UserService {
     const user = await this.userRepository.findOne({
       where: { socialId, socialPlatform },
     });
-    if (user) return user;
-    return null;
+    return user ?? null;
   }
 }
