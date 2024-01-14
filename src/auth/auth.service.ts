@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/user/entites/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -29,11 +28,10 @@ export class AuthService {
     };
   }
 
-  async decodeToken(token: string): Promise<User | null> {
+  decodeToken(token: string): String | null {
     const decode = this.jwtService.verify(token.split(' ')[1]);
     if (typeof decode === 'object' && decode.id) {
-      const user = await this.userService.findUserById(decode.id);
-      if (user) return user;
+      return decode.id;
     }
     return null;
   }

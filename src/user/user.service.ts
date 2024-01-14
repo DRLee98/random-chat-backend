@@ -5,6 +5,7 @@ import { User } from './entites/user.entity';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
 import { randomNameGenerator } from './utils/nameGenerator';
+import { MeOutput } from './dtos/me.dto';
 
 @Injectable()
 export class UserService {
@@ -53,13 +54,41 @@ export class UserService {
     }
   }
 
-  async updateUser(input: UpdateUserInput): Promise<UpdateUserOutput> {
+  async updateUser(
+    input: UpdateUserInput,
+    user?: User,
+  ): Promise<UpdateUserOutput> {
     try {
-      // TODO: 로그인 체크하고 로그인된 유저 정보를 변경하도록 수정 필요
-      await this.userRepository.update(1, { ...input });
+      if (!user)
+        return {
+          ok: false,
+          error: '로그인 후 이용해주세요.',
+        };
+
+      await this.userRepository.update(user.id, { ...input });
 
       return {
         ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  me(user?: User): MeOutput {
+    try {
+      if (user) {
+        return {
+          ok: true,
+          me: user,
+        };
+      }
+      return {
+        ok: false,
+        error: '로그인 후 이용해주세요.',
       };
     } catch (error) {
       return {

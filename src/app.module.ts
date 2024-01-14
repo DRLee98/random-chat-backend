@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { User } from './user/entites/user.entity';
 import { AuthModule } from './auth/auth.module';
-import { AuthMiddleware } from './auth/auth.middleware';
 
 @Module({
   imports: [
@@ -29,9 +28,6 @@ import { AuthMiddleware } from './auth/auth.middleware';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
-      context: ({ req }) => ({
-        user: req.user,
-      }),
     }),
     UserModule,
     AuthModule,
@@ -39,8 +35,4 @@ import { AuthMiddleware } from './auth/auth.middleware';
   controllers: [],
   providers: [],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes('/graphql');
-  }
-}
+export class AppModule {}
