@@ -6,6 +6,8 @@ import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
 import { LoggedInUser } from './user.decorator';
 import { Private } from 'src/auth/auth.decorator';
 import { MeOutput } from './dtos/me.dto';
+import { DeleteUserOutput } from './dtos/delete-user.dto';
+import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 
 @Resolver()
 export class UserResolver {
@@ -15,6 +17,13 @@ export class UserResolver {
   @Private()
   me(@LoggedInUser() user?: User): MeOutput {
     return this.userService.me(user);
+  }
+
+  @Query(() => UserProfileOutput)
+  userProfile(
+    @Args('input') input: UserProfileInput,
+  ): Promise<UserProfileOutput> {
+    return this.userService.userProfile(input);
   }
 
   @Mutation(() => CreateUserOutput)
@@ -31,5 +40,11 @@ export class UserResolver {
     @LoggedInUser() user?: User,
   ): Promise<UpdateUserOutput> {
     return this.userService.updateUser(input, user);
+  }
+
+  @Mutation(() => DeleteUserOutput)
+  @Private()
+  async deleteUser(@LoggedInUser() user?: User): Promise<DeleteUserOutput> {
+    return this.userService.deleteUser(user);
   }
 }

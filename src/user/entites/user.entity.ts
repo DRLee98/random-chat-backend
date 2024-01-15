@@ -3,7 +3,7 @@ import { CoreEntity } from 'src/common/entites/core.entity';
 import { Column, Entity, ManyToMany } from 'typeorm';
 
 @InputType('UserInputType', { isAbstract: true })
-@ObjectType()
+@ObjectType('UserObjectType', { isAbstract: true })
 @Entity()
 export class User extends CoreEntity {
   @Field(() => String)
@@ -31,6 +31,6 @@ export class User extends CoreEntity {
   allowMessage: boolean;
 
   @Field(() => [User])
-  @ManyToMany((type) => User)
+  @ManyToMany(() => User)
   blockUsers: User[];
 }

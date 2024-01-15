@@ -6,6 +6,8 @@ import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
 import { randomNameGenerator } from './utils/nameGenerator';
 import { MeOutput } from './dtos/me.dto';
+import { DeleteUserOutput } from './dtos/delete-user.dto';
+import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -78,6 +80,21 @@ export class UserService {
     }
   }
 
+  async deleteUser(user: User): Promise<DeleteUserOutput> {
+    try {
+      await this.userRepository.delete(user.id);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
   me(user?: User): MeOutput {
     try {
       if (user) {
@@ -89,6 +106,29 @@ export class UserService {
       return {
         ok: false,
         error: '로그인 후 이용해주세요.',
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async userProfile(input: UserProfileInput): Promise<UserProfileOutput> {
+    try {
+      const findUser = await this.findUserById(input.id);
+
+      if (!findUser) {
+        return {
+          ok: false,
+          error: '존재하지 않는 유저입니다.',
+        };
+      }
+
+      return {
+        ok: true,
+        user: findUser,
       };
     } catch (error) {
       return {
