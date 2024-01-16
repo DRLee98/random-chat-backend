@@ -8,6 +8,10 @@ import { randomNameGenerator } from './utils/nameGenerator';
 import { MeOutput } from './dtos/me.dto';
 import { DeleteUserOutput } from './dtos/delete-user.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import {
+  ToggleBlockUserInput,
+  ToggleBlockUserOutput,
+} from './dtos/toggle-block-user.dto';
 
 @Injectable()
 export class UserService {
@@ -86,6 +90,63 @@ export class UserService {
 
       return {
         ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async toggleBlockUser(
+    input: ToggleBlockUserInput,
+    loginUser?: User,
+  ): Promise<ToggleBlockUserOutput> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: loginUser.id },
+        relations: ['blockUsers'],
+      });
+
+      if (!user)
+        return {
+          ok: false,
+          error: '로그인 후 이용해주세요.',
+        };
+
+      const targetUser = await this.findUserById(input.id);
+
+      if (!targetUser) {
+        return {
+          ok: false,
+          error: '존재하지 않는 유저입니다.',
+        };
+      }
+
+      if (targetUser.id === user.id) {
+        return {
+          ok: false,
+          error: '자기 자신을 차단할 수 없습니다.',
+        };
+      }
+
+      let updateBlockUsers = [...(user.blockUsers ?? [])];
+      if (updateBlockUsers.some(({ id }) => id === targetUser.id)) {
+        updateBlockUsers = updateBlockUsers.filter(
+          ({ id }) => id !== targetUser.id,
+        );
+      } else {
+        updateBlockUsers.push(targetUser);
+      }
+
+      user.blockUsers = updateBlockUsers;
+
+      await this.userRepository.save(user);
+
+      return {
+        ok: true,
+        updateBlockUsers,
       };
     } catch (error) {
       return {

@@ -8,6 +8,10 @@ import { Private } from 'src/auth/auth.decorator';
 import { MeOutput } from './dtos/me.dto';
 import { DeleteUserOutput } from './dtos/delete-user.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import {
+  ToggleBlockUserInput,
+  ToggleBlockUserOutput,
+} from './dtos/toggle-block-user.dto';
 
 @Resolver()
 export class UserResolver {
@@ -46,5 +50,14 @@ export class UserResolver {
   @Private()
   async deleteUser(@LoggedInUser() user?: User): Promise<DeleteUserOutput> {
     return this.userService.deleteUser(user);
+  }
+
+  @Mutation(() => ToggleBlockUserOutput)
+  @Private()
+  async toggleBlockUser(
+    @Args('input') input: ToggleBlockUserInput,
+    @LoggedInUser() user?: User,
+  ): Promise<ToggleBlockUserOutput> {
+    return this.userService.toggleBlockUser(input, user);
   }
 }
