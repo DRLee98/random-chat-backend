@@ -5,7 +5,14 @@ import { User } from '../entites/user.entity';
 @ObjectType()
 class Me extends PickType(
   User,
-  ['nickname', 'bio', 'profileUrl', 'allowMessage'],
+  [
+    'nickname',
+    'bio',
+    'profileUrl',
+    'allowMessage',
+    'language',
+    'autoTranslation',
+  ],
   ObjectType,
 ) {}
 

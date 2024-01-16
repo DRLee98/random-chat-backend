@@ -1,6 +1,38 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import {
+  Field,
+  InputType,
+  ObjectType,
+  registerEnumType,
+} from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entites/core.entity';
-import { Column, Entity, ManyToMany } from 'typeorm';
+import { Message } from 'src/message/entites/message.entity';
+import { UserRoom } from 'src/room/entites/user-room.entity';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+
+export enum Language {
+  ko = 'ko', // 한국어
+  en = 'en', // 영어
+  ja = 'ja', // 일본어
+  zhCN = 'zh-CN', // 중국어 간체
+  zhTW = 'zh-TW', // 중국어 번체
+  vi = 'vi', // 베트남어
+  id = 'id', // 인도네시아어
+  th = 'th', // 태국어
+  de = 'de', // 독일어
+  ru = 'ru', // 러시아어
+  es = 'es', // 스페인어
+  it = 'it', // 이탈리아어
+  fr = 'fr', // 프랑스어
+}
+
+registerEnumType(Language, { name: 'Language' });
 
 @InputType('UserInputType', { isAbstract: true })
 @ObjectType('UserObjectType', { isAbstract: true })
@@ -32,5 +64,23 @@ export class User extends CoreEntity {
 
   @Field(() => [User])
   @ManyToMany(() => User)
+  @JoinTable()
   blockUsers: User[];
+
+  @Field(() => Language)
+  @Column({ type: 'enum', enum: Language, default: Language.ko })
+  language: Language;
+
+  @Field(() => Boolean)
+  @Column({ default: false })
+  autoTranslation: boolean;
+
+  @Field(() => [UserRoom])
+  @ManyToOne(() => UserRoom, (room) => room.user)
+  @JoinTable()
+  rooms: UserRoom[];
+
+  @Field(() => [Message])
+  @OneToMany(() => Message, (message) => message.user)
+  messages: Message[];
 }

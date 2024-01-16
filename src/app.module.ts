@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserModule } from './user/user.module';
@@ -6,6 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { User } from './user/entites/user.entity';
 import { AuthModule } from './auth/auth.module';
+import { MessageModule } from './message/message.module';
+import { RoomModule } from './room/room.module';
+import { Room } from './room/entites/room.entity';
+import { UserRoom } from './room/entites/user-room.entity';
+import { Message } from './message/entites/message.entity';
 
 @Module({
   imports: [
@@ -23,7 +28,7 @@ import { AuthModule } from './auth/auth.module';
       database: process.env.DB_NAME,
       synchronize: true,
       logging: true,
-      entities: [User],
+      entities: [User, Room, UserRoom, Message],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -31,6 +36,8 @@ import { AuthModule } from './auth/auth.module';
     }),
     UserModule,
     AuthModule,
+    MessageModule,
+    RoomModule,
   ],
   controllers: [],
   providers: [],

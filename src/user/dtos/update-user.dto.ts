@@ -4,7 +4,14 @@ import { CoreOutPut } from 'src/common/dtos/output.dto';
 
 @InputType()
 export class UpdateUserInput extends PartialType(
-  PickType(User, ['nickname', 'bio', 'profileUrl', 'allowMessage']),
+  PickType(User, [
+    'nickname',
+    'bio',
+    'profileUrl',
+    'allowMessage',
+    'language',
+    'autoTranslation',
+  ]),
 ) {}
 
 @ObjectType()
