@@ -5,6 +5,8 @@ import { In, Not, Repository } from 'typeorm';
 import { User } from 'src/user/entites/user.entity';
 import { UserRoom } from './entites/user-room.entity';
 import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
+import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
+import { MyRoomsOutput } from './dtos/my-rooms.dto';
 
 @Injectable()
 export class RoomService {
@@ -16,6 +18,38 @@ export class RoomService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
+
+  async myRooms(user: User): Promise<MyRoomsOutput> {
+    try {
+      if (!user)
+        return {
+          ok: false,
+          error: '로그인 후 이용해주세요.',
+        };
+
+      const rooms = await this.userRoomRepository.find({
+        where: {
+          user: {
+            id: user.id,
+          },
+        },
+        order: {
+          pinned: 'DESC',
+          updatedAt: 'DESC',
+        },
+      });
+
+      return {
+        ok: true,
+        rooms,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
 
   async createRandomRoom(loginUser: User): Promise<CreateRandomRoomOutput> {
     try {
@@ -133,6 +167,46 @@ export class RoomService {
       return {
         ok: true,
         room: myRoom,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async updateRoom(
+    input: UpdateRoomInput,
+    user?: User,
+  ): Promise<UpdateRoomOutput> {
+    try {
+      if (!user)
+        return {
+          ok: false,
+          error: '로그인 후 이용해주세요.',
+        };
+
+      const existRoom = await this.userRoomRepository.findOne({
+        where: {
+          id: input.id,
+          user: {
+            id: user.id,
+          },
+        },
+      });
+
+      if (!existRoom) {
+        return {
+          ok: false,
+          error: '존재하지 않는 방입니다.',
+        };
+      }
+
+      await this.userRoomRepository.update(input.id, { ...input });
+
+      return {
+        ok: true,
       };
     } catch (error) {
       return {
