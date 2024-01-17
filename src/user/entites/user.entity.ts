@@ -76,8 +76,7 @@ export class User extends CoreEntity {
   autoTranslation: boolean;
 
   @Field(() => [UserRoom])
-  @ManyToOne(() => UserRoom, (room) => room.user)
-  @JoinTable()
+  @OneToMany(() => UserRoom, (room) => room.user)
   rooms: UserRoom[];
 
   @Field(() => [Message])

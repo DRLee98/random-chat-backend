@@ -60,4 +60,10 @@ export class UserResolver {
   ): Promise<ToggleBlockUserOutput> {
     return this.userService.toggleBlockUser(input, user);
   }
+
+  // 데이터 추가용
+  @Mutation(() => Boolean)
+  async createManyUser(@Args('number') number: number) {
+    return this.userService.createManyUser(number);
+  }
 }

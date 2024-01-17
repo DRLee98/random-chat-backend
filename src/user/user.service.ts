@@ -215,4 +215,19 @@ export class UserService {
     });
     return user ?? null;
   }
+
+  // 데이터 추가용
+  async createManyUser(number: number) {
+    try {
+      for (let i = 0; i < number; i++) {
+        await this.createUser({
+          socialId: `${new Date().getTime()}${i}`,
+          socialPlatform: 'naver',
+        });
+      }
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
 }
