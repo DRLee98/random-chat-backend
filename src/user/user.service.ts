@@ -71,6 +71,18 @@ export class UserService {
           error: '로그인 후 이용해주세요.',
         };
 
+      if (input.nickname) {
+        const existNickname = await this.userRepository.findOne({
+          where: { nickname: input.nickname },
+        });
+        if (existNickname) {
+          return {
+            ok: false,
+            error: '이미 사용중인 닉네임입니다.',
+          };
+        }
+      }
+
       await this.userRepository.update(user.id, { ...input });
 
       return {
