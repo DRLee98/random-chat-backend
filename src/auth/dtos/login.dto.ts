@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
-import { CoreOutPut } from 'src/common/dtos/output.dto';
+import { CoreOutput } from 'src/common/dtos/output.dto';
 import { User } from 'src/user/entites/user.entity';
 
 @InputType()
@@ -9,7 +9,7 @@ export class LoginInput extends PickType(User, [
 ]) {}
 
 @ObjectType()
-export class LoginOutput extends CoreOutPut {
+export class LoginOutput extends CoreOutput {
   @Field(() => String, { nullable: true })
   token?: string;
 }

@@ -1,5 +1,5 @@
 import { ObjectType } from '@nestjs/graphql';
-import { CoreOutPut } from 'src/common/dtos/output.dto';
+import { CoreOutput } from 'src/common/dtos/output.dto';
 
 @ObjectType()
-export class DeleteUserOutput extends CoreOutPut {}
+export class DeleteUserOutput extends CoreOutput {}

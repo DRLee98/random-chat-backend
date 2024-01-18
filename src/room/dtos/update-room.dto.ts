@@ -6,7 +6,7 @@ import {
   PickType,
 } from '@nestjs/graphql';
 import { UserRoom } from '../entites/user-room.entity';
-import { CoreOutPut } from 'src/common/dtos/output.dto';
+import { CoreOutput } from 'src/common/dtos/output.dto';
 
 @InputType()
 export class UpdateRoomInput extends PartialType(
@@ -17,4 +17,4 @@ export class UpdateRoomInput extends PartialType(
 }
 
 @ObjectType()
-export class UpdateRoomOutput extends CoreOutPut {}
+export class UpdateRoomOutput extends CoreOutput {}
