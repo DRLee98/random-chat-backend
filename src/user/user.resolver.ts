@@ -4,7 +4,6 @@ import { User } from './entites/user.entity';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
 import { LoggedInUser } from './user.decorator';
-import { Private } from 'src/auth/auth.decorator';
 import { MeOutput } from './dtos/me.dto';
 import { DeleteUserOutput } from './dtos/delete-user.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
@@ -12,13 +11,13 @@ import {
   ToggleBlockUserInput,
   ToggleBlockUserOutput,
 } from './dtos/toggle-block-user.dto';
+import { Public } from 'src/auth/auth.decorator';
 
 @Resolver()
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
   @Query(() => MeOutput)
-  @Private()
   me(@LoggedInUser() user: User): MeOutput {
     return this.userService.me(user);
   }
@@ -31,6 +30,7 @@ export class UserResolver {
   }
 
   @Mutation(() => CreateUserOutput)
+  @Public()
   async createUser(
     @Args('input') input: CreateUserInput,
   ): Promise<CreateUserOutput> {
@@ -38,7 +38,6 @@ export class UserResolver {
   }
 
   @Mutation(() => UpdateUserOutput)
-  @Private()
   async updateUser(
     @Args('input') input: UpdateUserInput,
     @LoggedInUser() user: User,
@@ -47,13 +46,11 @@ export class UserResolver {
   }
 
   @Mutation(() => DeleteUserOutput)
-  @Private()
   async deleteUser(@LoggedInUser() user: User): Promise<DeleteUserOutput> {
     return this.userService.deleteUser(user);
   }
 
   @Mutation(() => ToggleBlockUserOutput)
-  @Private()
   async toggleBlockUser(
     @Args('input') input: ToggleBlockUserInput,
     @LoggedInUser() user: User,

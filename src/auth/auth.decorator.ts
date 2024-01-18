@@ -1,3 +1,3 @@
 import { Reflector } from '@nestjs/core';
 
-export const Private = Reflector.createDecorator();
+export const Public = Reflector.createDecorator();
