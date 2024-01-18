@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Room } from './entites/room.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
@@ -6,7 +6,7 @@ import { User } from 'src/user/entites/user.entity';
 import { UserRoom } from './entites/user-room.entity';
 import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
-import { MyRoomsOutput } from './dtos/my-rooms.dto';
+import { MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
 import { UserService } from 'src/user/user.service';
 import { MessageService } from 'src/message/message.service';
 
@@ -18,10 +18,11 @@ export class RoomService {
     @InjectRepository(UserRoom)
     private readonly userRoomRepository: Repository<UserRoom>,
     private userService: UserService,
+    @Inject(forwardRef(() => MessageService))
     private messageService: MessageService,
   ) {}
 
-  async myRooms(user: User): Promise<MyRoomsOutput> {
+  async myRooms(input: MyRoomsInput, user: User): Promise<MyRoomsOutput> {
     try {
       const rooms = await this.userRoomRepository.find({
         select: {
@@ -41,7 +42,19 @@ export class RoomService {
         relations: {
           room: true,
         },
+        skip: (input.page - 1) * input.take,
+        take: input.take,
       });
+
+      const totalPages = Math.ceil(
+        (await this.userRoomRepository.count({
+          where: {
+            user: {
+              id: user.id,
+            },
+          },
+        })) / input.take,
+      );
 
       const mapRooms: MyRoomsOutput['rooms'] = await Promise.all(
         rooms.map(async ({ room, ...item }) => {
@@ -59,6 +72,8 @@ export class RoomService {
       return {
         ok: true,
         rooms: mapRooms,
+        totalPages,
+        hasNextPage: input.page < totalPages,
       };
     } catch (error) {
       return {
@@ -210,5 +225,53 @@ export class RoomService {
         error,
       };
     }
+  }
+
+  async checkValidRoom(roomId: number, userId: number) {
+    const existRoom = await this.roomRepository.findOne({
+      where: {
+        id: roomId,
+        userRooms: {
+          user: {
+            id: userId,
+          },
+        },
+      },
+    });
+    return Boolean(existRoom);
+  }
+
+  async incNewMesssageCount(roomId: number, userId: number) {
+    const room = await this.roomRepository.findOne({
+      select: {
+        userRooms: {
+          id: true,
+          newMessage: true,
+          user: {
+            id: true,
+          },
+        },
+      },
+      where: {
+        id: roomId,
+      },
+      relations: {
+        userRooms: {
+          user: true,
+        },
+      },
+    });
+
+    if (!room) return;
+
+    const targetUserRoom = room.userRooms.filter(
+      (item) => item.user.id !== userId,
+    );
+
+    targetUserRoom.forEach(async (item) => {
+      await this.userRoomRepository.update(item.id, {
+        newMessage: item.newMessage + 1,
+      });
+    });
   }
 }

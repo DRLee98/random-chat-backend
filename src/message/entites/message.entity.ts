@@ -1,4 +1,9 @@
-import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+import {
+  Field,
+  InputType,
+  ObjectType,
+  registerEnumType,
+} from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entites/core.entity';
 import { Room } from 'src/room/entites/room.entity';
 import { User } from 'src/user/entites/user.entity';
@@ -12,6 +17,7 @@ export enum MessageType {
 
 registerEnumType(MessageType, { name: 'MessageType' });
 
+@InputType('MessageInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class Message extends CoreEntity {

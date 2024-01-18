@@ -4,15 +4,18 @@ import { LoggedInUser } from 'src/user/user.decorator';
 import { User } from 'src/user/entites/user.entity';
 import { RoomService } from './room.service';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
-import { MyRoomsOutput } from './dtos/my-rooms.dto';
+import { MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
 
 @Resolver()
 export class RoomResolver {
   constructor(private readonly roomService: RoomService) {}
 
   @Query(() => MyRoomsOutput)
-  async myRooms(@LoggedInUser() user: User): Promise<MyRoomsOutput> {
-    return this.roomService.myRooms(user);
+  async myRooms(
+    @Args('input') input: MyRoomsInput,
+    @LoggedInUser() user: User,
+  ): Promise<MyRoomsOutput> {
+    return this.roomService.myRooms(input, user);
   }
 
   @Mutation(() => CreateRandomRoomOutput)
