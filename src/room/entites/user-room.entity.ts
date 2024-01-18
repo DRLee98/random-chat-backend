@@ -5,7 +5,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 import { Room } from './room.entity';
 
 @InputType('UserRoomInputType', { isAbstract: true })
-@ObjectType()
+@ObjectType('UserRoomObjectType', { isAbstract: true })
 @Entity()
 export class UserRoom extends CoreEntity {
   @Field(() => User)

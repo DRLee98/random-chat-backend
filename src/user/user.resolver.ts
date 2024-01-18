@@ -19,7 +19,7 @@ export class UserResolver {
 
   @Query(() => MeOutput)
   @Private()
-  me(@LoggedInUser() user?: User): MeOutput {
+  me(@LoggedInUser() user: User): MeOutput {
     return this.userService.me(user);
   }
 
@@ -41,14 +41,14 @@ export class UserResolver {
   @Private()
   async updateUser(
     @Args('input') input: UpdateUserInput,
-    @LoggedInUser() user?: User,
+    @LoggedInUser() user: User,
   ): Promise<UpdateUserOutput> {
     return this.userService.updateUser(input, user);
   }
 
   @Mutation(() => DeleteUserOutput)
   @Private()
-  async deleteUser(@LoggedInUser() user?: User): Promise<DeleteUserOutput> {
+  async deleteUser(@LoggedInUser() user: User): Promise<DeleteUserOutput> {
     return this.userService.deleteUser(user);
   }
 
@@ -56,7 +56,7 @@ export class UserResolver {
   @Private()
   async toggleBlockUser(
     @Args('input') input: ToggleBlockUserInput,
-    @LoggedInUser() user?: User,
+    @LoggedInUser() user: User,
   ): Promise<ToggleBlockUserOutput> {
     return this.userService.toggleBlockUser(input, user);
   }

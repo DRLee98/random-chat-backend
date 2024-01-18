@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, In, Not, Repository } from 'typeorm';
 import { User } from './entites/user.entity';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
@@ -62,15 +62,9 @@ export class UserService {
 
   async updateUser(
     input: UpdateUserInput,
-    user?: User,
+    user: User,
   ): Promise<UpdateUserOutput> {
     try {
-      if (!user)
-        return {
-          ok: false,
-          error: '로그인 후 이용해주세요.',
-        };
-
       if (input.nickname) {
         const existNickname = await this.userRepository.findOne({
           where: { nickname: input.nickname },
@@ -113,19 +107,13 @@ export class UserService {
 
   async toggleBlockUser(
     input: ToggleBlockUserInput,
-    loginUser?: User,
+    loginUser: User,
   ): Promise<ToggleBlockUserOutput> {
     try {
       const user = await this.userRepository.findOne({
         where: { id: loginUser.id },
         relations: ['blockUsers'],
       });
-
-      if (!user)
-        return {
-          ok: false,
-          error: '로그인 후 이용해주세요.',
-        };
 
       const targetUser = await this.findUserById(input.id);
 
@@ -168,17 +156,11 @@ export class UserService {
     }
   }
 
-  me(user?: User): MeOutput {
+  me(user: User): MeOutput {
     try {
-      if (user) {
-        return {
-          ok: true,
-          me: user,
-        };
-      }
       return {
-        ok: false,
-        error: '로그인 후 이용해주세요.',
+        ok: true,
+        me: user,
       };
     } catch (error) {
       return {
@@ -211,8 +193,12 @@ export class UserService {
     }
   }
 
-  async findUserById(id: number): Promise<User | null> {
+  async findUserById(
+    id: number,
+    options?: Omit<FindOneOptions<User>, 'were'>,
+  ): Promise<User | null> {
     const user = await this.userRepository.findOne({
+      ...options,
       where: { id },
     });
     return user ?? null;
@@ -221,11 +207,39 @@ export class UserService {
   async findUserBySocialId(
     socialId: string,
     socialPlatform: string,
+    options?: Omit<FindOneOptions<User>, 'were'>,
   ): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { socialId, socialPlatform },
+      ...options,
     });
     return user ?? null;
+  }
+
+  async findBlockedMe(
+    id: number,
+    options?: Omit<FindOneOptions<User>, 'were'>,
+  ): Promise<User[]> {
+    const user = await this.userRepository.find({
+      ...options,
+      where: {
+        blockUsers: {
+          id,
+        },
+      },
+    });
+    return user;
+  }
+
+  async findChatEnabledUsers(
+    blockIds: number[],
+    options?: Omit<FindOneOptions<User>, 'were'>,
+  ): Promise<User[]> {
+    const user = await this.userRepository.find({
+      ...options,
+      where: { id: Not(In(blockIds)), allowMessage: true },
+    });
+    return user;
   }
 
   // 데이터 추가용

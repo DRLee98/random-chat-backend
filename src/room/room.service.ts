@@ -7,6 +7,8 @@ import { UserRoom } from './entites/user-room.entity';
 import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
 import { MyRoomsOutput } from './dtos/my-rooms.dto';
+import { UserService } from 'src/user/user.service';
+import { MessageService } from 'src/message/message.service';
 
 @Injectable()
 export class RoomService {
@@ -15,19 +17,18 @@ export class RoomService {
     private readonly roomRepository: Repository<Room>,
     @InjectRepository(UserRoom)
     private readonly userRoomRepository: Repository<UserRoom>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private userService: UserService,
+    private messageService: MessageService,
   ) {}
 
   async myRooms(user: User): Promise<MyRoomsOutput> {
     try {
-      if (!user)
-        return {
-          ok: false,
-          error: '로그인 후 이용해주세요.',
-        };
-
       const rooms = await this.userRoomRepository.find({
+        select: {
+          room: {
+            id: true,
+          },
+        },
         where: {
           user: {
             id: user.id,
@@ -37,11 +38,27 @@ export class RoomService {
           pinned: 'DESC',
           updatedAt: 'DESC',
         },
+        relations: {
+          room: true,
+        },
       });
+
+      const mapRooms: MyRoomsOutput['rooms'] = await Promise.all(
+        rooms.map(async ({ room, ...item }) => {
+          const lastMessage = await this.messageService.findLastMessage(
+            room.id,
+          );
+          return {
+            ...item,
+            room,
+            lastMessage,
+          };
+        }),
+      );
 
       return {
         ok: true,
-        rooms,
+        rooms: mapRooms,
       };
     } catch (error) {
       return {
@@ -53,33 +70,21 @@ export class RoomService {
 
   async createRandomRoom(loginUser: User): Promise<CreateRandomRoomOutput> {
     try {
-      const user = await this.userRepository.findOne({
+      const user = await this.userService.findUserById(loginUser.id, {
         select: {
           blockUsers: {
             id: true,
           },
         },
-        where: { id: loginUser.id },
         relations: {
           blockUsers: true,
         },
       });
 
-      if (!user)
-        return {
-          ok: false,
-          error: '로그인 후 이용해주세요.',
-        };
-
       // 나를 차단한 유저 목록
-      const blockMeUsers = await this.userRepository.find({
+      const blockMeUsers = await this.userService.findBlockedMe(user.id, {
         select: {
           id: true,
-        },
-        where: {
-          blockUsers: {
-            id: user.id,
-          },
         },
       });
 
@@ -127,9 +132,8 @@ export class RoomService {
       ];
 
       // 채팅 가능한 유저 목록
-      const userList = await this.userRepository.find({
+      const userList = await this.userService.findChatEnabledUsers(blockIds, {
         select: { id: true },
-        where: { id: Not(In(blockIds)) },
       });
 
       if (userList.length === 0)
@@ -141,9 +145,7 @@ export class RoomService {
       // 랜덤한 유저 선택
       const targetUserId =
         userList[Math.floor(Math.random() * userList.length)];
-      const targetUser = await this.userRepository.findOne({
-        where: { id: targetUserId.id },
-      });
+      const targetUser = await this.userService.findUserById(targetUserId.id);
 
       const myRoom = this.userRoomRepository.create({
         user,
@@ -178,15 +180,9 @@ export class RoomService {
 
   async updateRoom(
     input: UpdateRoomInput,
-    user?: User,
+    user: User,
   ): Promise<UpdateRoomOutput> {
     try {
-      if (!user)
-        return {
-          ok: false,
-          error: '로그인 후 이용해주세요.',
-        };
-
       const existRoom = await this.userRoomRepository.findOne({
         where: {
           id: input.id,

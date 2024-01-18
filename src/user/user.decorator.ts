@@ -1,9 +1,11 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { User } from './entites/user.entity';
 
 export const LoggedInUser = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext) => {
+  (data: keyof User, ctx: ExecutionContext) => {
     const context = GqlExecutionContext.create(ctx).getContext();
-    return context.user;
+    if (!context.user) throw Error('로그인 후 이용해주세요.');
+    return data ? context.user[data] : context.user;
   },
 );
