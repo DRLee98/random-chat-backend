@@ -12,12 +12,14 @@ import {
   ToggleBlockUserInput,
   ToggleBlockUserOutput,
 } from './dtos/toggle-block-user.dto';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly commonService: CommonService,
   ) {}
 
   async createUser(input: CreateUserInput): Promise<CreateUserOutput> {
@@ -25,12 +27,7 @@ export class UserService {
       const findUser = await this.userRepository.findOne({
         where: { socialId: input.socialId },
       });
-      if (findUser) {
-        return {
-          ok: false,
-          error: '이미 가입된 계정입니다.',
-        };
-      }
+      if (findUser) return this.commonService.error('이미 가입된 계정입니다.');
 
       let nickname = '';
       while (true) {
@@ -53,10 +50,7 @@ export class UserService {
         user,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error: error,
-      };
+      return this.commonService.error(error);
     }
   }
 
@@ -69,12 +63,8 @@ export class UserService {
         const existNickname = await this.userRepository.findOne({
           where: { nickname: input.nickname },
         });
-        if (existNickname) {
-          return {
-            ok: false,
-            error: '이미 사용중인 닉네임입니다.',
-          };
-        }
+        if (existNickname)
+          return this.commonService.error('이미 사용중인 닉네임입니다.');
       }
 
       await this.userRepository.update(user.id, { ...input });
@@ -83,25 +73,19 @@ export class UserService {
         ok: true,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return this.commonService.error(error);
     }
   }
 
   async deleteUser(user: User): Promise<DeleteUserOutput> {
     try {
-      await this.userRepository.delete(user.id);
+      await this.userRepository.softDelete(user.id);
 
       return {
         ok: true,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return this.commonService.error(error);
     }
   }
 
@@ -117,19 +101,11 @@ export class UserService {
 
       const targetUser = await this.findUserById(input.id);
 
-      if (!targetUser) {
-        return {
-          ok: false,
-          error: '존재하지 않는 유저입니다.',
-        };
-      }
+      if (!targetUser)
+        return this.commonService.error('존재하지 않는 유저입니다.');
 
-      if (targetUser.id === user.id) {
-        return {
-          ok: false,
-          error: '자기 자신을 차단할 수 없습니다.',
-        };
-      }
+      if (targetUser.id === user.id)
+        return this.commonService.error('자기 자신을 차단할 수 없습니다.');
 
       let updateBlockUsers = [...(user.blockUsers ?? [])];
       if (updateBlockUsers.some(({ id }) => id === targetUser.id)) {
@@ -149,10 +125,7 @@ export class UserService {
         updateBlockUsers,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return this.commonService.error(error);
     }
   }
 
@@ -163,10 +136,7 @@ export class UserService {
         me: user,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return this.commonService.error(error);
     }
   }
 
@@ -174,12 +144,8 @@ export class UserService {
     try {
       const findUser = await this.findUserById(input.id);
 
-      if (!findUser) {
-        return {
-          ok: false,
-          error: '존재하지 않는 유저입니다.',
-        };
-      }
+      if (!findUser)
+        return this.commonService.error('존재하지 않는 유저입니다.');
 
       return {
         ok: true,

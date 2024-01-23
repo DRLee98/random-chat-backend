@@ -18,7 +18,7 @@ export enum MessageType {
 registerEnumType(MessageType, { name: 'MessageType' });
 
 @InputType('MessageInputType', { isAbstract: true })
-@ObjectType()
+@ObjectType('MessageObjectType', { isAbstract: true })
 @Entity()
 export class Message extends CoreEntity {
   @Field(() => Room)
@@ -38,4 +38,8 @@ export class Message extends CoreEntity {
   @Field(() => MessageType)
   @Column({ type: 'enum', enum: MessageType, default: MessageType.TEXT })
   type: MessageType;
+
+  @Field(() => [Number], { defaultValue: [] })
+  @Column('int', { array: true, default: [] })
+  readUsersId: number[];
 }

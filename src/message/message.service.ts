@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Message } from './entites/message.entity';
-import { Repository } from 'typeorm';
+import { ArrayContains, Not, Repository } from 'typeorm';
 import {
   ViewMessagesInput,
   ViewMessagesOutput,
@@ -9,13 +9,19 @@ import {
 import { User } from 'src/user/entites/user.entity';
 import { RoomService } from 'src/room/room.service';
 import { SendMessageInput, SendMessageOutput } from './dtos/send-message.dto';
+import { CommonService } from 'src/common/common.service';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/common/common.constants';
+import { NEW_MESSAGE, READ_MESSAGE } from './message.constants';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
-    private roomeService: RoomService,
+    private readonly commonService: CommonService,
+    private readonly roomService: RoomService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   async findLastMessage(roomId: number) {
@@ -37,17 +43,15 @@ export class MessageService {
     user: User,
   ): Promise<ViewMessagesOutput> {
     try {
-      const existRoom = await this.roomeService.checkValidRoom(
+      const existRoom = await this.roomService.checkValidRoom(
         input.roomId,
         user.id,
       );
 
-      if (!existRoom) {
-        return {
-          ok: false,
-          error: '참여중인 방의 메시지만 조회가 가능합니다.',
-        };
-      }
+      if (!existRoom)
+        return this.commonService.error(
+          '참여중인 방의 메시지만 조회가 가능합니다.',
+        );
 
       const messages = await this.messageRepository.find({
         select: {
@@ -65,31 +69,27 @@ export class MessageService {
         relations: {
           user: true,
         },
-        skip: (input.page - 1) * input.take,
-        take: input.take,
+        ...this.commonService.paginationOption(input),
       });
 
-      const totalPages = Math.ceil(
-        (await this.messageRepository.count({
-          where: {
-            room: {
-              id: input.roomId,
-            },
-          },
-        })) / input.take,
-      );
+      await this.roomService.resetNewMessageInUserRoom(input.roomId, user.id);
+      await this.readMessage(input.roomId, user.id);
 
+      const output = await this.commonService.paginationOutput(
+        input,
+        this.messageRepository,
+        {
+          room: {
+            id: input.roomId,
+          },
+        },
+      );
       return {
-        ok: true,
         messages,
-        totalPages,
-        hasNextPage: input.page < totalPages,
+        ...output,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error: error,
-      };
+      return this.commonService.error(error);
     }
   }
 
@@ -98,17 +98,15 @@ export class MessageService {
     user: User,
   ): Promise<SendMessageOutput> {
     try {
-      const existRoom = await this.roomeService.checkValidRoom(
+      const existRoom = await this.roomService.checkValidRoom(
         input.roomId,
         user.id,
       );
 
-      if (!existRoom) {
-        return {
-          ok: false,
-          error: '참여중인 방의 메시지만 조회가 가능합니다.',
-        };
-      }
+      if (!existRoom)
+        return this.commonService.error(
+          '참여중인 방에만 메시지를 보낼 수 있습니다.',
+        );
 
       const message = this.messageRepository.create({
         contents: input.contents,
@@ -117,20 +115,53 @@ export class MessageService {
         room: {
           id: input.roomId,
         },
+        readUsersId: [user.id],
       });
 
       await this.messageRepository.save(message);
-      this.roomeService.incNewMesssageCount(input.roomId, user.id);
+      await this.roomService.updateNewMesssageInUserRoom(
+        input.roomId,
+        user.id,
+        input.contents,
+      );
+
+      await this.pubSub.publish(NEW_MESSAGE, {
+        newMessage: message,
+      });
 
       return {
         ok: true,
         messageId: message.id,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return this.commonService.error(error);
     }
+  }
+
+  async readMessage(roomId: number, userId: number) {
+    const messages = await this.messageRepository.find({
+      where: {
+        room: {
+          id: roomId,
+        },
+        readUsersId: Not(ArrayContains([userId])),
+      },
+    });
+
+    const newMessages = await Promise.all(
+      messages.map(async (message) => {
+        message.readUsersId.push(userId);
+        await this.messageRepository.save(message);
+        return { id: message.id, readUsersId: message.readUsersId };
+      }),
+    );
+
+    if (newMessages.length > 0) {
+      this.pubSub.publish(READ_MESSAGE, {
+        readMessage: { messages: newMessages, roomId, userId },
+      });
+    }
+
+    return newMessages;
   }
 }

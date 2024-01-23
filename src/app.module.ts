@@ -11,6 +11,7 @@ import { RoomModule } from './room/room.module';
 import { Room } from './room/entites/room.entity';
 import { UserRoom } from './room/entites/user-room.entity';
 import { Message } from './message/entites/message.entity';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -33,11 +34,17 @@ import { Message } from './message/entites/message.entity';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
+      subscriptions: {
+        'subscriptions-transport-ws': {
+          onConnect: (connectionParams: any) => connectionParams,
+        },
+      },
     }),
     UserModule,
     AuthModule,
     RoomModule,
     MessageModule,
+    CommonModule,
   ],
   controllers: [],
   providers: [],

@@ -18,7 +18,9 @@ export class AuthGuard implements CanActivate {
 
     if (!isPublic) {
       const gqlContext = GqlExecutionContext.create(context).getContext();
-      const token = gqlContext?.req?.headers['authorization'];
+      const token =
+        gqlContext?.req?.headers['authorization'] ??
+        gqlContext['authorization'];
       if (token) {
         const decodeId = this.authService.decodeToken(token);
         if (decodeId) {

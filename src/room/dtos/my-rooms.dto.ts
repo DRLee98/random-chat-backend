@@ -8,14 +8,14 @@ import {
 @InputType()
 export class MyRoomsInput extends PaginationInput {}
 
-@ObjectType('MyRoom')
-class Room extends OmitType(UserRoom, ['user'], ObjectType) {
+@ObjectType()
+export class MyRoom extends OmitType(UserRoom, ['user'], ObjectType) {
   @Field(() => String)
   lastMessage: String;
 }
 
 @ObjectType()
 export class MyRoomsOutput extends PaginationOutput {
-  @Field(() => [Room], { nullable: true })
-  rooms?: Room[];
+  @Field(() => [MyRoom], { nullable: true })
+  rooms?: MyRoom[];
 }

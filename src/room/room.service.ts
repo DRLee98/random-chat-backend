@@ -9,6 +9,10 @@ import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
 import { MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
 import { UserService } from 'src/user/user.service';
 import { MessageService } from 'src/message/message.service';
+import { CommonService } from 'src/common/common.service';
+import { PUB_SUB } from 'src/common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
+import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
 
 @Injectable()
 export class RoomService {
@@ -17,9 +21,11 @@ export class RoomService {
     private readonly roomRepository: Repository<Room>,
     @InjectRepository(UserRoom)
     private readonly userRoomRepository: Repository<UserRoom>,
-    private userService: UserService,
+    private readonly commonService: CommonService,
+    private readonly userService: UserService,
     @Inject(forwardRef(() => MessageService))
-    private messageService: MessageService,
+    private readonly messageService: MessageService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   async myRooms(input: MyRoomsInput, user: User): Promise<MyRoomsOutput> {
@@ -42,19 +48,8 @@ export class RoomService {
         relations: {
           room: true,
         },
-        skip: (input.page - 1) * input.take,
-        take: input.take,
+        ...this.commonService.paginationOption(input),
       });
-
-      const totalPages = Math.ceil(
-        (await this.userRoomRepository.count({
-          where: {
-            user: {
-              id: user.id,
-            },
-          },
-        })) / input.take,
-      );
 
       const mapRooms: MyRoomsOutput['rooms'] = await Promise.all(
         rooms.map(async ({ room, ...item }) => {
@@ -69,17 +64,21 @@ export class RoomService {
         }),
       );
 
+      const output = await this.commonService.paginationOutput(
+        input,
+        this.userRoomRepository,
+        {
+          user: {
+            id: user.id,
+          },
+        },
+      );
       return {
-        ok: true,
         rooms: mapRooms,
-        totalPages,
-        hasNextPage: input.page < totalPages,
+        ...output,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return this.commonService.error(error);
     }
   }
 
@@ -152,10 +151,7 @@ export class RoomService {
       });
 
       if (userList.length === 0)
-        return {
-          ok: false,
-          error: '채팅 가능한 유저가 없습니다.',
-        };
+        return this.commonService.error('채팅 가능한 유저가 없습니다.');
 
       // 랜덤한 유저 선택
       const targetUserId =
@@ -181,15 +177,16 @@ export class RoomService {
 
       await this.roomRepository.save(room);
 
+      this.pubSub.publish(NEW_ROOM, {
+        newRoom: targetUserRoom,
+      });
+
       return {
         ok: true,
         room: myRoom,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return this.commonService.error(error);
     }
   }
 
@@ -207,12 +204,8 @@ export class RoomService {
         },
       });
 
-      if (!existRoom) {
-        return {
-          ok: false,
-          error: '존재하지 않는 방입니다.',
-        };
-      }
+      if (!existRoom)
+        return this.commonService.error('존재하지 않는 방입니다.');
 
       await this.userRoomRepository.update(input.id, { ...input });
 
@@ -220,10 +213,7 @@ export class RoomService {
         ok: true,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return this.commonService.error(error);
     }
   }
 
@@ -241,7 +231,11 @@ export class RoomService {
     return Boolean(existRoom);
   }
 
-  async incNewMesssageCount(roomId: number, userId: number) {
+  async updateNewMesssageInUserRoom(
+    roomId: number,
+    userId: number,
+    message: string,
+  ) {
     const room = await this.roomRepository.findOne({
       select: {
         userRooms: {
@@ -269,9 +263,38 @@ export class RoomService {
     );
 
     targetUserRoom.forEach(async (item) => {
+      const newMessageCount = item.newMessage + 1;
+
       await this.userRoomRepository.update(item.id, {
-        newMessage: item.newMessage + 1,
+        newMessage: newMessageCount,
       });
+      this.pubSub.publish(UPDATE_NEW_MESSAGE, {
+        updateNewMessageInUserRoom: {
+          id: item.id,
+          newMessage: newMessageCount,
+          lastMessage: message,
+          userId: item.user.id,
+        },
+      });
+    });
+  }
+
+  async resetNewMessageInUserRoom(roomId: number, userId: number) {
+    const userRoom = await this.userRoomRepository.findOne({
+      where: {
+        room: {
+          id: roomId,
+        },
+        user: {
+          id: userId,
+        },
+      },
+    });
+
+    if (!userRoom) return;
+
+    await this.userRoomRepository.update(userRoom.id, {
+      newMessage: 0,
     });
   }
 }
