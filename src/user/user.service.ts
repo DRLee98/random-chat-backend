@@ -29,13 +29,22 @@ export class UserService {
       });
       if (findUser) return this.commonService.error('이미 가입된 계정입니다.');
 
-      let nickname = '';
-      while (true) {
-        nickname = randomNameGenerator();
+      let nickname = input.nickname;
+      if (!nickname) {
+        while (true) {
+          nickname = randomNameGenerator();
+          const findNickname = await this.userRepository.findOne({
+            where: { nickname },
+          });
+          if (!findNickname) break;
+        }
+      } else {
         const findNickname = await this.userRepository.findOne({
           where: { nickname },
         });
-        if (!findNickname) break;
+
+        if (findNickname)
+          return this.commonService.error('이미 사용중인 닉네임입니다.');
       }
 
       const user = this.userRepository.create({
