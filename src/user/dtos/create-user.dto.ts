@@ -7,8 +7,8 @@ export class CreateUserInput extends PickType(User, [
   'socialId',
   'socialPlatform',
 ]) {
-  @Field(() => String, { nullable: true })
-  nickname?: string;
+  @Field(() => String)
+  nickname: string;
 
   @Field(() => String, { nullable: true })
   bio?: string;

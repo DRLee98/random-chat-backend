@@ -13,6 +13,7 @@ import {
   ToggleBlockUserOutput,
 } from './dtos/toggle-block-user.dto';
 import { CommonService } from 'src/common/common.service';
+import { RandomNicknameOutput } from './dtos/random-nickname.dto';
 
 @Injectable()
 export class UserService {
@@ -29,27 +30,15 @@ export class UserService {
       });
       if (findUser) return this.commonService.error('이미 가입된 계정입니다.');
 
-      let nickname = input.nickname;
-      if (!nickname) {
-        while (true) {
-          nickname = randomNameGenerator();
-          const findNickname = await this.userRepository.findOne({
-            where: { nickname },
-          });
-          if (!findNickname) break;
-        }
-      } else {
-        const findNickname = await this.userRepository.findOne({
-          where: { nickname },
-        });
+      const findNickname = await this.userRepository.findOne({
+        where: { nickname: input.nickname },
+      });
 
-        if (findNickname)
-          return this.commonService.error('이미 사용중인 닉네임입니다.');
-      }
+      if (findNickname)
+        return this.commonService.error('이미 사용중인 닉네임입니다.');
 
       const user = this.userRepository.create({
         ...input,
-        nickname,
       });
 
       await this.userRepository.save(user);
@@ -217,6 +206,26 @@ export class UserService {
     return user;
   }
 
+  async randomNickname(): Promise<RandomNicknameOutput> {
+    try {
+      let nickname = '';
+      while (true) {
+        nickname = randomNameGenerator();
+        const findNickname = await this.userRepository.findOne({
+          where: { nickname },
+        });
+        if (!findNickname) break;
+      }
+
+      return {
+        ok: true,
+        nickname,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
+
   // 데이터 추가용
   async createManyUser(number: number) {
     try {
@@ -224,6 +233,7 @@ export class UserService {
         await this.createUser({
           socialId: `${new Date().getTime()}${i}`,
           socialPlatform: 'naver',
+          nickname: randomNameGenerator(),
         });
       }
       return true;

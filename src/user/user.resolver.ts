@@ -12,6 +12,7 @@ import {
   ToggleBlockUserOutput,
 } from './dtos/toggle-block-user.dto';
 import { Public } from 'src/auth/auth.decorator';
+import { RandomNicknameOutput } from './dtos/random-nickname.dto';
 
 @Resolver()
 export class UserResolver {
@@ -56,6 +57,12 @@ export class UserResolver {
     @LoggedInUser() user: User,
   ): Promise<ToggleBlockUserOutput> {
     return this.userService.toggleBlockUser(input, user);
+  }
+
+  @Query(() => RandomNicknameOutput)
+  @Public()
+  randomNickname(): Promise<RandomNicknameOutput> {
+    return this.userService.randomNickname();
   }
 
   // 데이터 추가용
