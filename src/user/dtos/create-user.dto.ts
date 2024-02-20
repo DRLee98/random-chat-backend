@@ -1,6 +1,8 @@
 import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 import { User } from '../entites/user.entity';
+import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
+import * as Upload from 'graphql-upload/Upload.js';
 
 @InputType()
 export class CreateUserInput extends PickType(User, [
@@ -13,8 +15,8 @@ export class CreateUserInput extends PickType(User, [
   @Field(() => String, { nullable: true })
   bio?: string;
 
-  @Field(() => String, { nullable: true })
-  profileUrl?: string;
+  @Field(() => GraphQLUpload, { nullable: true })
+  profile?: Upload;
 }
 
 @ObjectType()

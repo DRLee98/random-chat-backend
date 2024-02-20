@@ -14,6 +14,7 @@ import {
 } from './dtos/toggle-block-user.dto';
 import { CommonService } from 'src/common/common.service';
 import { RandomNicknameOutput } from './dtos/random-nickname.dto';
+import { AwsService } from 'src/aws/aws.service';
 
 @Injectable()
 export class UserService {
@@ -21,9 +22,13 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly commonService: CommonService,
+    private readonly awsService: AwsService,
   ) {}
 
-  async createUser(input: CreateUserInput): Promise<CreateUserOutput> {
+  async createUser({
+    profile,
+    ...input
+  }: CreateUserInput): Promise<CreateUserOutput> {
     try {
       const findUser = await this.userRepository.findOne({
         where: { socialId: input.socialId },
@@ -37,8 +42,20 @@ export class UserService {
       if (findNickname)
         return this.commonService.error('이미 사용중인 닉네임입니다.');
 
+      let profileUrl = null;
+      if (profile) {
+        const result = await this.awsService.uploadFile(
+          profile,
+          `user-profile/${input.socialId}`,
+        );
+        if (result.ok) {
+          profileUrl = result.url;
+        }
+      }
+
       const user = this.userRepository.create({
         ...input,
+        profileUrl,
       });
 
       await this.userRepository.save(user);

@@ -12,6 +12,7 @@ import { Room } from './room/entites/room.entity';
 import { UserRoom } from './room/entites/user-room.entity';
 import { Message } from './message/entites/message.entity';
 import { CommonModule } from './common/common.module';
+import { AwsModule } from './aws/aws.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { CommonModule } from './common/common.module';
         },
       },
     }),
+    AwsModule,
     UserModule,
     AuthModule,
     RoomModule,
