@@ -4,7 +4,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UploadFileOutput } from './dto/upload-file.dto';
 import { CommonService } from 'src/common/common.service';
-import * as Upload from 'graphql-upload/Upload.js';
+import { FileUpload } from 'graphql-upload/processRequest.js';
+import { streamToBuffer } from './utils';
 
 @Injectable()
 export class AwsService {
@@ -20,20 +21,21 @@ export class AwsService {
   }
 
   async uploadFile(
-    promiseFile: Upload,
+    promiseFile: FileUpload,
     folder: string,
   ): Promise<UploadFileOutput> {
     try {
       const file = await promiseFile;
       const stream = file.createReadStream();
+      const buffer = await streamToBuffer(stream);
       const objectName = `${folder}/${file.filename}`;
+
       await new AWS.S3()
         .putObject({
-          Body: stream,
+          Body: buffer,
           Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
           Key: objectName,
-          // ACL: 'public-read',
-          ContentLength: stream._readableState.length,
+          ACL: 'public-read',
         })
         .promise();
 
