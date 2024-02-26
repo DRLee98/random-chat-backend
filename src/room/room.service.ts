@@ -47,6 +47,7 @@ export class RoomService {
         },
         relations: {
           room: true,
+          user: false,
         },
         ...this.commonService.paginationOption(input),
       });
@@ -56,9 +57,16 @@ export class RoomService {
           const lastMessage = await this.messageService.findLastMessage(
             room.id,
           );
+          const users = await this.userService.findUserByRoomId(room.id, {
+            select: {
+              id: true,
+              profileUrl: true,
+            },
+          });
           return {
             ...item,
             room,
+            users,
             lastMessage,
           };
         }),
