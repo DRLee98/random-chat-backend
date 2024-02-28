@@ -28,10 +28,14 @@ export class AuthService {
   }
 
   decodeToken(token: string): String | null {
-    const decode = this.jwtService.verify(token.split(' ')[1]);
-    if (typeof decode === 'object' && decode.id) {
-      return decode.id;
+    try {
+      const decode = this.jwtService.verify(token.split(' ')[1]);
+      if (typeof decode === 'object' && decode.id) {
+        return decode.id;
+      }
+      return null;
+    } catch (error) {
+      return null;
     }
-    return null;
   }
 }

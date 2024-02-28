@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Public } from './auth.decorator';
@@ -29,7 +34,7 @@ export class AuthGuard implements CanActivate {
         }
       }
 
-      return Boolean(gqlContext.user);
+      if (!Boolean(gqlContext.user)) throw new UnauthorizedException();
     }
 
     return true;
