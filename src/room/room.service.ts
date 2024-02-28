@@ -188,6 +188,7 @@ export class RoomService {
 
       const createdRoom = {
         ...myRoom,
+        room,
         lastMessage: '',
         users: [targetUser, user],
       };
