@@ -4,13 +4,13 @@ import { LoggedInUser } from 'src/user/user.decorator';
 import { User } from 'src/user/entites/user.entity';
 import { RoomService } from './room.service';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
-import { MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
+import { MyRoom, MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/common/common.constants';
 import { Inject } from '@nestjs/common';
 import { UpdateNewMessageInUserRoom } from './dtos/update-new-message.dto';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
-import { UserRoom } from './entites/user-room.entity';
+import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
 
 @Resolver()
 export class RoomResolver {
@@ -42,7 +42,15 @@ export class RoomResolver {
     return this.roomService.updateRoom(input, user);
   }
 
-  @Subscription(() => UserRoom, {
+  @Query(() => RoomDetailOutput)
+  async roomDetail(
+    @Args('input') input: RoomDetailInput,
+    @LoggedInUser() user: User,
+  ): Promise<RoomDetailOutput> {
+    return this.roomService.roomDetail(input, user);
+  }
+
+  @Subscription(() => MyRoom, {
     filter: (payload, _, context) => {
       return payload.newRoom.user.id === context.user.id;
     },

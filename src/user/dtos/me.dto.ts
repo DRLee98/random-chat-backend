@@ -6,6 +6,7 @@ import { User } from '../entites/user.entity';
 class Me extends PickType(
   User,
   [
+    'id',
     'nickname',
     'bio',
     'profileUrl',

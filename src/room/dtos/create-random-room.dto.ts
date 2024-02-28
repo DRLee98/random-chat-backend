@@ -1,9 +1,9 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
-import { UserRoom } from '../entites/user-room.entity';
+import { MyRoom } from './my-rooms.dto';
 
 @ObjectType()
 export class CreateRandomRoomOutput extends CoreOutput {
-  @Field(() => UserRoom, { nullable: true })
-  room?: UserRoom;
+  @Field(() => MyRoom, { nullable: true })
+  room?: MyRoom;
 }

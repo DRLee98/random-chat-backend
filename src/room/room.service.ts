@@ -13,6 +13,7 @@ import { CommonService } from 'src/common/common.service';
 import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
+import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
 
 @Injectable()
 export class RoomService {
@@ -185,13 +186,19 @@ export class RoomService {
 
       await this.roomRepository.save(room);
 
+      const createdRoom = {
+        ...myRoom,
+        lastMessage: '',
+        users: [targetUser, user],
+      };
+
       this.pubSub.publish(NEW_ROOM, {
-        newRoom: targetUserRoom,
+        newRoom: createdRoom,
       });
 
       return {
         ok: true,
-        room: myRoom,
+        room: createdRoom,
       };
     } catch (error) {
       return this.commonService.error(error);
@@ -219,6 +226,46 @@ export class RoomService {
 
       return {
         ok: true,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
+
+  async roomDetail(
+    input: RoomDetailInput,
+    user: User,
+  ): Promise<RoomDetailOutput> {
+    try {
+      const userRoom = await this.userRoomRepository.findOne({
+        where: {
+          room: {
+            id: input.roomId,
+          },
+          user: {
+            id: user.id,
+          },
+        },
+      });
+
+      if (!userRoom) return this.commonService.error('존재하지 않는 방입니다.');
+
+      const users = await this.userService.findUserByRoomId(input.roomId, {
+        select: {
+          id: true,
+          nickname: true,
+          profileUrl: true,
+          bio: true,
+          language: true,
+        },
+      });
+
+      return {
+        ok: true,
+        room: {
+          ...userRoom,
+          users,
+        },
       };
     } catch (error) {
       return this.commonService.error(error);
