@@ -186,20 +186,23 @@ export class RoomService {
 
       await this.roomRepository.save(room);
 
-      const createdRoom = {
-        ...myRoom,
-        room,
-        lastMessage: '',
-        users: [targetUser, user],
-      };
-
       this.pubSub.publish(NEW_ROOM, {
-        newRoom: createdRoom,
+        newRoom: {
+          ...targetUserRoom,
+          room,
+          lastMessage: '',
+          users: [targetUser, user],
+        },
       });
 
       return {
         ok: true,
-        room: createdRoom,
+        room: {
+          ...myRoom,
+          room,
+          lastMessage: '',
+          users: [targetUser, user],
+        },
       };
     } catch (error) {
       return this.commonService.error(error);
