@@ -69,6 +69,9 @@ export class MessageService {
         relations: {
           user: true,
         },
+        order: {
+          createdAt: 'DESC',
+        },
         ...this.commonService.paginationOption(input),
       });
 
@@ -85,7 +88,7 @@ export class MessageService {
         },
       );
       return {
-        messages,
+        messages: messages.reverse(),
         ...output,
       };
     } catch (error) {
