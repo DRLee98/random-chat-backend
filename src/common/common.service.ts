@@ -14,7 +14,7 @@ export class CommonService {
 
   paginationOption(input: PaginationInput) {
     return {
-      skip: (input.page - 1) * input.take,
+      skip: input.skip,
       take: input.take,
     };
   }
@@ -24,17 +24,15 @@ export class CommonService {
     repository: Repository<T>,
     where: FindOptionsWhere<T>,
   ): Promise<PaginationOutput> {
-    const totalPages = Math.ceil(
-      (await repository.count({
+    const total = Math.ceil(
+      await repository.count({
         where,
-      })) / input.take,
+      }),
     );
 
     return {
       ok: true,
-      currentPage: input.page,
-      totalPages,
-      hasNextPage: input.page < totalPages,
+      hasNext: input.skip + input.take < total,
     };
   }
 }
