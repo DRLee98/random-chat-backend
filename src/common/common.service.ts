@@ -32,6 +32,7 @@ export class CommonService {
 
     return {
       ok: true,
+      currentPage: input.page,
       totalPages,
       hasNextPage: input.page < totalPages,
     };
