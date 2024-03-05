@@ -14,6 +14,8 @@ import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
 import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
+import { DeleteRoomInput, DeleteRoomOutput } from './dtos/delete-room.dto';
+import { MessageType } from 'src/message/entites/message.entity';
 
 @Injectable()
 export class RoomService {
@@ -276,6 +278,74 @@ export class RoomService {
     }
   }
 
+  async deleteRoom(
+    input: DeleteRoomInput,
+    user: User,
+  ): Promise<DeleteRoomOutput> {
+    try {
+      const room = await this.roomRepository.findOne({
+        where: {
+          id: input.roomId,
+        },
+      });
+
+      if (!room) return this.commonService.error('존재하지 않는 방입니다.');
+
+      const userRooms = await this.userRoomRepository.find({
+        select: {
+          user: {
+            id: true,
+          },
+        },
+        where: {
+          room: {
+            id: input.roomId,
+          },
+        },
+        relations: {
+          user: true,
+        },
+      });
+
+      let myUserRoom = null;
+      let unDeletedUserRooms = [];
+
+      userRooms.forEach((room) => {
+        if (room.user.id === user.id) {
+          myUserRoom = room;
+        } else {
+          unDeletedUserRooms.push(room);
+        }
+      });
+
+      console.log(myUserRoom, unDeletedUserRooms, user.id);
+
+      if (!myUserRoom)
+        return this.commonService.error('참여중인 방이 아닙니다.');
+
+      await this.userRoomRepository.softDelete(myUserRoom.id);
+      await this.messageService.sendMessage(
+        {
+          roomId: input.roomId,
+          contents: `${user.nickname}님이 채팅방을 나갔습니다.`,
+          type: MessageType.SYSTEM,
+        },
+        user,
+      );
+
+      if (unDeletedUserRooms.length === 0) {
+        await this.roomRepository.softDelete(input.roomId);
+        await this.messageService.deleteMessages(input.roomId);
+      }
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
+
   async checkValidRoom(roomId: number, userId: number) {
     const existRoom = await this.roomRepository.findOne({
       where: {
@@ -286,6 +356,7 @@ export class RoomService {
           },
         },
       },
+      withDeleted: true,
     });
     return Boolean(existRoom);
   }

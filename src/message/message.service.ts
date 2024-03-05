@@ -167,4 +167,24 @@ export class MessageService {
 
     return newMessages;
   }
+
+  async deleteMessages(roomId: number) {
+    try {
+      const messages = await this.messageRepository.find({
+        where: {
+          room: {
+            id: roomId,
+          },
+        },
+      });
+
+      await this.messageRepository.softDelete(messages.map(({ id }) => id));
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
 }

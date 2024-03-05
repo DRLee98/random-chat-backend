@@ -13,7 +13,7 @@ export class UpdateRoomInput extends PartialType(
   PickType(UserRoom, ['name', 'noti', 'pinned']),
 ) {
   @Field(() => Number)
-  id: number;
+  userRoomId: number;
 }
 
 @ObjectType()

@@ -11,6 +11,7 @@ import { Inject } from '@nestjs/common';
 import { UpdateNewMessageInUserRoom } from './dtos/update-new-message.dto';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
 import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
+import { DeleteRoomInput, DeleteRoomOutput } from './dtos/delete-room.dto';
 
 @Resolver()
 export class RoomResolver {
@@ -48,6 +49,14 @@ export class RoomResolver {
     @LoggedInUser() user: User,
   ): Promise<RoomDetailOutput> {
     return this.roomService.roomDetail(input, user);
+  }
+
+  @Mutation(() => DeleteRoomOutput)
+  async deleteRoom(
+    @Args('input') input: DeleteRoomInput,
+    @LoggedInUser() user: User,
+  ): Promise<DeleteRoomOutput> {
+    return this.roomService.deleteRoom(input, user);
   }
 
   @Subscription(() => MyRoom, {
