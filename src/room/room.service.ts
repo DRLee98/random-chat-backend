@@ -427,4 +427,20 @@ export class RoomService {
       newMessage: 0,
     });
   }
+
+  async updateUserRoomUpdateAt(roomId: number) {
+    const userRooms = await this.userRoomRepository.find({
+      where: {
+        room: {
+          id: roomId,
+        },
+      },
+    });
+
+    userRooms.forEach(async (item) => {
+      await this.userRoomRepository.update(item.id, {
+        updatedAt: new Date(),
+      });
+    });
+  }
 }

@@ -132,6 +132,8 @@ export class MessageService {
         newMessage: message,
       });
 
+      await this.roomService.updateUserRoomUpdateAt(input.roomId);
+
       return {
         ok: true,
         messageId: message.id,
