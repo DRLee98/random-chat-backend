@@ -3,19 +3,7 @@ import { CoreOutput } from 'src/common/dtos/output.dto';
 import { User } from '../entites/user.entity';
 
 @ObjectType()
-class Me extends PickType(
-  User,
-  [
-    'id',
-    'nickname',
-    'bio',
-    'profileUrl',
-    'allowMessage',
-    'language',
-    'autoTranslation',
-  ],
-  ObjectType,
-) {}
+class Me extends PickType(User, ['id', 'nickname', 'profileUrl'], ObjectType) {}
 
 @ObjectType()
 export class MeOutput extends CoreOutput {

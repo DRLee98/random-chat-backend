@@ -13,6 +13,7 @@ import {
 } from './dtos/toggle-block-user.dto';
 import { Public } from 'src/auth/auth.decorator';
 import { RandomNicknameOutput } from './dtos/random-nickname.dto';
+import { MeDetailOutput } from './dtos/me-detail.dto';
 
 @Resolver()
 export class UserResolver {
@@ -21,6 +22,11 @@ export class UserResolver {
   @Query(() => MeOutput)
   me(@LoggedInUser() user: User): MeOutput {
     return this.userService.me(user);
+  }
+
+  @Query(() => MeDetailOutput)
+  meDetail(@LoggedInUser() user: User): Promise<MeDetailOutput> {
+    return this.userService.meDetail(user);
   }
 
   @Query(() => UserProfileOutput)

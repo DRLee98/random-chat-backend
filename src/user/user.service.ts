@@ -15,6 +15,7 @@ import {
 import { CommonService } from 'src/common/common.service';
 import { RandomNicknameOutput } from './dtos/random-nickname.dto';
 import { AwsService } from 'src/aws/aws.service';
+import { MeDetailOutput } from './dtos/me-detail.dto';
 
 @Injectable()
 export class UserService {
@@ -110,8 +111,17 @@ export class UserService {
   ): Promise<ToggleBlockUserOutput> {
     try {
       const user = await this.userRepository.findOne({
+        select: {
+          blockUsers: {
+            id: true,
+            nickname: true,
+            profileUrl: true,
+          },
+        },
         where: { id: loginUser.id },
-        relations: ['blockUsers'],
+        relations: {
+          blockUsers: true,
+        },
       });
 
       const targetUser = await this.findUserById(input.id);
@@ -149,6 +159,33 @@ export class UserService {
       return {
         ok: true,
         me: user,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
+
+  async meDetail(user: User): Promise<MeDetailOutput> {
+    try {
+      const me = await this.userRepository.findOne({
+        select: {
+          blockUsers: {
+            id: true,
+            nickname: true,
+            profileUrl: true,
+          },
+        },
+        where: {
+          id: user.id,
+        },
+        relations: {
+          blockUsers: true,
+        },
+      });
+
+      return {
+        ok: true,
+        me,
       };
     } catch (error) {
       return this.commonService.error(error);
