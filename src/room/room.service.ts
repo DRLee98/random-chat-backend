@@ -37,6 +37,7 @@ export class RoomService {
         select: {
           room: {
             id: true,
+            updatedAt: true,
           },
         },
         where: {
@@ -45,8 +46,13 @@ export class RoomService {
           },
         },
         order: {
-          pinned: 'DESC',
-          updatedAt: 'DESC',
+          pinnedAt: {
+            direction: 'DESC',
+            nulls: 'LAST',
+          },
+          room: {
+            updatedAt: 'DESC',
+          },
         },
         relations: {
           room: true,
@@ -212,13 +218,13 @@ export class RoomService {
   }
 
   async updateRoom(
-    input: UpdateRoomInput,
+    { userRoomId, pinned, ...input }: UpdateRoomInput,
     user: User,
   ): Promise<UpdateRoomOutput> {
     try {
       const existRoom = await this.userRoomRepository.findOne({
         where: {
-          id: input.id,
+          id: userRoomId,
           user: {
             id: user.id,
           },
@@ -228,7 +234,10 @@ export class RoomService {
       if (!existRoom)
         return this.commonService.error('존재하지 않는 방입니다.');
 
-      await this.userRoomRepository.update(input.id, { ...input });
+      await this.userRoomRepository.update(userRoomId, {
+        ...input,
+        ...(pinned !== undefined && { pinnedAt: pinned ? new Date() : null }),
+      });
 
       return {
         ok: true,
@@ -428,19 +437,9 @@ export class RoomService {
     });
   }
 
-  async updateUserRoomUpdateAt(roomId: number) {
-    const userRooms = await this.userRoomRepository.find({
-      where: {
-        room: {
-          id: roomId,
-        },
-      },
-    });
-
-    userRooms.forEach(async (item) => {
-      await this.userRoomRepository.update(item.id, {
-        updatedAt: new Date(),
-      });
+  async updateRoomUpdateAt(roomId: number) {
+    await this.roomRepository.update(roomId, {
+      updatedAt: new Date(),
     });
   }
 }

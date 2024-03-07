@@ -24,9 +24,9 @@ export class UserRoom extends CoreEntity {
   @Column({ default: true })
   noti: boolean;
 
-  @Field(() => Boolean)
-  @Column({ default: false })
-  pinned: boolean;
+  @Field(() => Date, { nullable: true })
+  @Column({ default: null })
+  pinnedAt: Date;
 
   @Field(() => Number)
   @Column({ default: 0 })

@@ -132,7 +132,7 @@ export class MessageService {
         newMessage: message,
       });
 
-      await this.roomService.updateUserRoomUpdateAt(input.roomId);
+      await this.roomService.updateRoomUpdateAt(input.roomId);
 
       return {
         ok: true,
