@@ -3,7 +3,10 @@ import { CoreOutput } from 'src/common/dtos/output.dto';
 import { User } from '../entites/user.entity';
 
 @ObjectType()
-class Me extends PickType(User, ['id', 'nickname', 'profileUrl'], ObjectType) {}
+class Me extends PickType(User, ['id', 'nickname', 'profileUrl'], ObjectType) {
+  @Field(() => [Number])
+  blockUserIds: number[];
+}
 
 @ObjectType()
 export class MeOutput extends CoreOutput {

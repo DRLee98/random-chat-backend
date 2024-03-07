@@ -20,7 +20,7 @@ export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
   @Query(() => MeOutput)
-  me(@LoggedInUser() user: User): MeOutput {
+  me(@LoggedInUser() user: User): Promise<MeOutput> {
     return this.userService.me(user);
   }
 

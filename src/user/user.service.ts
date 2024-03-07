@@ -154,11 +154,31 @@ export class UserService {
     }
   }
 
-  me(user: User): MeOutput {
+  async me(user: User): Promise<MeOutput> {
     try {
+      const loadUser = await this.userRepository.findOne({
+        select: {
+          blockUsers: {
+            id: true,
+          },
+          id: true,
+          nickname: true,
+          profileUrl: true,
+        },
+        where: { id: user.id },
+        relations: {
+          blockUsers: true,
+        },
+      });
+
+      if (!loadUser)
+        return this.commonService.error('존재하지 않는 유저입니다.');
+
+      const { blockUsers, ...rest } = loadUser;
+
       return {
         ok: true,
-        me: user,
+        me: { ...rest, blockUserIds: blockUsers.map(({ id }) => id) },
       };
     } catch (error) {
       return this.commonService.error(error);
