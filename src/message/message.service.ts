@@ -136,7 +136,7 @@ export class MessageService {
 
       return {
         ok: true,
-        messageId: message.id,
+        message,
       };
     } catch (error) {
       return this.commonService.error(error);

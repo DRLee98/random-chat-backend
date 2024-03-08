@@ -10,6 +10,6 @@ export class SendMessageInput extends PickType(Message, ['contents', 'type']) {
 
 @ObjectType()
 export class SendMessageOutput extends CoreOutput {
-  @Field(() => Number, { nullable: true })
-  messageId?: number;
+  @Field(() => Message, { nullable: true })
+  message?: Message;
 }
