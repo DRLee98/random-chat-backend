@@ -46,10 +46,6 @@ export class RoomService {
           },
         },
         order: {
-          pinnedAt: {
-            direction: 'DESC',
-            nulls: 'LAST',
-          },
           room: {
             updatedAt: 'DESC',
           },
@@ -61,25 +57,37 @@ export class RoomService {
         ...this.commonService.paginationOption(input),
       });
 
-      const mapRooms: MyRoomsOutput['rooms'] = await Promise.all(
-        rooms.map(async ({ room, ...item }) => {
-          const lastMessage = await this.messageService.findLastMessage(
-            room.id,
+      const mapRooms: MyRoomsOutput['rooms'] = (
+        await Promise.all(
+          rooms.map(async ({ room, ...item }) => {
+            const lastMessage = await this.messageService.findLastMessage(
+              room.id,
+            );
+            const users = await this.userService.findUserByRoomId(room.id, {
+              select: {
+                id: true,
+                profileUrl: true,
+              },
+            });
+            return {
+              ...item,
+              room,
+              users,
+              lastMessage,
+            };
+          }),
+        )
+      ).sort((a, b) => {
+        if (a.pinnedAt && b.pinnedAt) {
+          return (
+            Math.max(b.pinnedAt.getTime(), b.room.updatedAt.getTime()) -
+            Math.max(a.pinnedAt.getTime(), a.room.updatedAt.getTime())
           );
-          const users = await this.userService.findUserByRoomId(room.id, {
-            select: {
-              id: true,
-              profileUrl: true,
-            },
-          });
-          return {
-            ...item,
-            room,
-            users,
-            lastMessage,
-          };
-        }),
-      );
+        }
+        if (b.pinnedAt && !a.pinnedAt) return 1;
+        if (a.pinnedAt && !b.pinnedAt) return -1;
+        return 0;
+      });
 
       const output = await this.commonService.paginationOutput(
         input,
