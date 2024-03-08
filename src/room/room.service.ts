@@ -286,7 +286,7 @@ export class RoomService {
       return {
         ok: true,
         room: {
-          ...userRoom,
+          userRoom,
           users,
         },
       };
@@ -334,8 +334,6 @@ export class RoomService {
           unDeletedUserRooms.push(room);
         }
       });
-
-      console.log(myUserRoom, unDeletedUserRooms, user.id);
 
       if (!myUserRoom)
         return this.commonService.error('참여중인 방이 아닙니다.');

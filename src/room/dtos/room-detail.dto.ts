@@ -10,11 +10,17 @@ export class RoomDetailInput {
 }
 
 @ObjectType()
-export class RoomDetail extends OmitType(
+export class SimpleUserRoom extends OmitType(
   UserRoom,
   ['user', 'room'],
   ObjectType,
-) {
+) {}
+
+@ObjectType()
+export class RoomDetail {
+  @Field(() => SimpleUserRoom)
+  userRoom: SimpleUserRoom;
+
   @Field(() => [User])
   users: User[];
 }
