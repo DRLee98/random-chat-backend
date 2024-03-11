@@ -4,7 +4,6 @@ import { FindOneOptions, In, Not, Repository } from 'typeorm';
 import { User } from './entites/user.entity';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
-import { randomNameGenerator } from './utils/nameGenerator';
 import { MeOutput } from './dtos/me.dto';
 import { DeleteUserOutput } from './dtos/delete-user.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
@@ -16,6 +15,7 @@ import { CommonService } from 'src/common/common.service';
 import { RandomNicknameOutput } from './dtos/random-nickname.dto';
 import { AwsService } from 'src/aws/aws.service';
 import { MeDetailOutput } from './dtos/me-detail.dto';
+import { getProfilePath, randomNameGenerator } from './utils';
 
 @Injectable()
 export class UserService {
@@ -47,7 +47,7 @@ export class UserService {
       if (profile) {
         const result = await this.awsService.uploadFile(
           profile,
-          `user-profile/${input.socialId}`,
+          getProfilePath(input.socialId),
         );
         if (result.ok) {
           profileUrl = result.url;
@@ -56,7 +56,7 @@ export class UserService {
 
       const user = this.userRepository.create({
         ...input,
-        profileUrl,
+        ...(profileUrl && { profileUrl }),
       });
 
       await this.userRepository.save(user);
@@ -71,7 +71,7 @@ export class UserService {
   }
 
   async updateUser(
-    input: UpdateUserInput,
+    { profile, ...input }: UpdateUserInput,
     user: User,
   ): Promise<UpdateUserOutput> {
     try {
@@ -83,7 +83,21 @@ export class UserService {
           return this.commonService.error('이미 사용중인 닉네임입니다.');
       }
 
-      await this.userRepository.update(user.id, { ...input });
+      let profileUrl = null;
+      if (profile) {
+        const result = await this.awsService.uploadFile(
+          profile,
+          getProfilePath(user.socialId),
+        );
+        if (result.ok) {
+          profileUrl = result.url;
+        }
+      }
+
+      await this.userRepository.update(user.id, {
+        ...input,
+        ...(profileUrl && { profileUrl }),
+      });
 
       return {
         ok: true,
@@ -141,9 +155,7 @@ export class UserService {
         updateBlockUsers.push(targetUser);
       }
 
-      user.blockUsers = updateBlockUsers;
-
-      await this.userRepository.save(user);
+      await this.userRepository.save({ ...user, blockUsers: updateBlockUsers });
 
       return {
         ok: true,
@@ -314,22 +326,6 @@ export class UserService {
       };
     } catch (error) {
       return this.commonService.error(error);
-    }
-  }
-
-  // 데이터 추가용
-  async createManyUser(number: number) {
-    try {
-      for (let i = 0; i < number; i++) {
-        await this.createUser({
-          socialId: `${new Date().getTime()}${i}`,
-          socialPlatform: 'naver',
-          nickname: randomNameGenerator(),
-        });
-      }
-      return true;
-    } catch (error) {
-      return false;
     }
   }
 }

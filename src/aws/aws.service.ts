@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UploadFileOutput } from './dto/upload-file.dto';
 import { CommonService } from 'src/common/common.service';
-import { FileUpload } from 'graphql-upload/processRequest.js';
+import { FileUpload, Upload } from 'graphql-upload';
 import { streamToBuffer } from './utils';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AwsService {
   }
 
   async uploadFile(
-    promiseFile: FileUpload,
+    promiseFile: Upload['promise'],
     folder: string,
   ): Promise<UploadFileOutput> {
     try {

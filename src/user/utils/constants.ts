@@ -1,10 +1,4 @@
-export const randomNameGenerator = () => {
-  return `${determiners[Math.floor(Math.random() * determiners.length)]} ${
-    nouns[Math.floor(Math.random() * nouns.length)]
-  } ${Math.floor(Math.random() * 9999)}`;
-};
-
-const determiners = [
+export const determiners = [
   '강직한',
   '고요한',
   '고운',
@@ -140,7 +134,7 @@ const determiners = [
   '호감이 가는',
 ];
 
-const nouns = [
+export const nouns = [
   '고양이',
   '강아지',
   '거북이',

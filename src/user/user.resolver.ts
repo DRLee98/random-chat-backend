@@ -70,10 +70,4 @@ export class UserResolver {
   randomNickname(): Promise<RandomNicknameOutput> {
     return this.userService.randomNickname();
   }
-
-  // 데이터 추가용
-  @Mutation(() => Boolean)
-  async createManyUser(@Args('number') number: number) {
-    return this.userService.createManyUser(number);
-  }
 }
