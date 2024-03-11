@@ -41,6 +41,6 @@ export class Message extends CoreEntity {
   type: MessageType;
 
   @Field(() => [ID], { defaultValue: [] })
-  @Column('string', { array: true, default: [] })
+  @Column('text', { array: true, default: [] })
   readUsersId: string[];
 }
