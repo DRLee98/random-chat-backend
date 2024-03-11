@@ -232,7 +232,7 @@ export class UserService {
   }
 
   async findUserById(
-    id: number,
+    id: string,
     options?: Omit<FindOneOptions<User>, 'were'>,
   ): Promise<User | null> {
     const user = await this.userRepository.findOne({
@@ -255,7 +255,7 @@ export class UserService {
   }
 
   async findBlockedMe(
-    id: number,
+    id: string,
     options?: Omit<FindOneOptions<User>, 'were'>,
   ): Promise<User[]> {
     const user = await this.userRepository.find({
@@ -270,7 +270,7 @@ export class UserService {
   }
 
   async findChatEnabledUsers(
-    blockIds: number[],
+    blockIds: string[],
     options?: Omit<FindOneOptions<User>, 'were'>,
   ): Promise<User[]> {
     const user = await this.userRepository.find({
@@ -281,7 +281,7 @@ export class UserService {
   }
 
   async findUserByRoomId(
-    id: number,
+    id: string,
     options?: Omit<FindOneOptions<User>, 'were'>,
   ): Promise<User[]> {
     const user = await this.userRepository.find({

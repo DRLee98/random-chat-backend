@@ -1,12 +1,12 @@
-import { Field, InputType, ObjectType, OmitType } from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType, OmitType } from '@nestjs/graphql';
 import { User } from 'src/user/entites/user.entity';
 import { UserRoom } from '../entites/user-room.entity';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 
 @InputType()
 export class RoomDetailInput {
-  @Field(() => Number)
-  roomId: number;
+  @Field(() => ID)
+  roomId: string;
 }
 
 @ObjectType()

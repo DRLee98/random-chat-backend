@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
       if (token) {
         const decodeId = this.authService.decodeToken(token);
         if (decodeId) {
-          const user = await this.userService.findUserById(+decodeId);
+          const user = await this.userService.findUserById(decodeId);
           if (user) gqlContext.user = user;
         }
       }

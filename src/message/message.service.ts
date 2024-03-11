@@ -24,7 +24,7 @@ export class MessageService {
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
-  async findLastMessage(roomId: number) {
+  async findLastMessage(roomId: string) {
     const lastMessage = await this.messageRepository.findOne({
       where: {
         room: {
@@ -143,7 +143,7 @@ export class MessageService {
     }
   }
 
-  async readMessage(roomId: number, userId: number) {
+  async readMessage(roomId: string, userId: string) {
     const messages = await this.messageRepository.find({
       where: {
         room: {
@@ -170,7 +170,7 @@ export class MessageService {
     return newMessages;
   }
 
-  async deleteMessages(roomId: number) {
+  async deleteMessages(roomId: string) {
     try {
       const messages = await this.messageRepository.find({
         where: {

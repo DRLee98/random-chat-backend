@@ -1,4 +1,4 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 import { Message } from '../entites/message.entity';
 import {
   PaginationInput,
@@ -7,8 +7,8 @@ import {
 
 @InputType()
 export class ViewMessagesInput extends PaginationInput {
-  @Field(() => Number)
-  roomId: number;
+  @Field(() => ID)
+  roomId: string;
 }
 
 @ObjectType()

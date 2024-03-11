@@ -1,5 +1,6 @@
 import {
   Field,
+  ID,
   InputType,
   ObjectType,
   registerEnumType,
@@ -39,7 +40,7 @@ export class Message extends CoreEntity {
   @Column({ type: 'enum', enum: MessageType, default: MessageType.TEXT })
   type: MessageType;
 
-  @Field(() => [Number], { defaultValue: [] })
-  @Column('int', { array: true, default: [] })
-  readUsersId: number[];
+  @Field(() => [ID], { defaultValue: [] })
+  @Column('string', { array: true, default: [] })
+  readUsersId: string[];
 }

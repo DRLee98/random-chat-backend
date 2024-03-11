@@ -1,5 +1,6 @@
 import {
   Field,
+  ID,
   InputType,
   ObjectType,
   PartialType,
@@ -12,8 +13,8 @@ import { CoreOutput } from 'src/common/dtos/output.dto';
 export class UpdateRoomInput extends PartialType(
   PickType(UserRoom, ['name', 'noti']),
 ) {
-  @Field(() => Number)
-  userRoomId: number;
+  @Field(() => ID)
+  userRoomId: string;
 
   @Field(() => Boolean, { nullable: true })
   pinned?: boolean;

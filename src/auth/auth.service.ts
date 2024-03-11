@@ -27,7 +27,7 @@ export class AuthService {
     return this.commonService.error('존재하지 않는 계정입니다.');
   }
 
-  decodeToken(token: string): String | null {
+  decodeToken(token: string): string | null {
     try {
       const decode = this.jwtService.verify(token.split(' ')[1]);
       if (typeof decode === 'object' && decode.id) {

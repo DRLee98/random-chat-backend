@@ -361,7 +361,7 @@ export class RoomService {
     }
   }
 
-  async checkValidRoom(roomId: number, userId: number) {
+  async checkValidRoom(roomId: string, userId: string) {
     const existRoom = await this.roomRepository.findOne({
       where: {
         id: roomId,
@@ -377,8 +377,8 @@ export class RoomService {
   }
 
   async updateNewMesssageInUserRoom(
-    roomId: number,
-    userId: number,
+    roomId: string,
+    userId: string,
     message: string,
   ) {
     const room = await this.roomRepository.findOne({
@@ -424,7 +424,7 @@ export class RoomService {
     });
   }
 
-  async resetNewMessageInUserRoom(roomId: number, userId: number) {
+  async resetNewMessageInUserRoom(roomId: string, userId: string) {
     const userRoom = await this.userRoomRepository.findOne({
       where: {
         room: {
@@ -443,7 +443,7 @@ export class RoomService {
     });
   }
 
-  async updateRoomUpdateAt(roomId: number) {
+  async updateRoomUpdateAt(roomId: string) {
     await this.roomRepository.update(roomId, {
       updatedAt: new Date(),
     });
