@@ -28,14 +28,14 @@ describe('CommonService 테스트', () => {
     });
   });
 
-  it('paginationOption 테스트', () => {
+  it('페이징 option 테스트', () => {
     const input: PaginationInput = { skip: 0, take: 10 };
     const result = commonService.paginationOption(input);
 
     expect(result).toEqual(input);
   });
 
-  describe('paginationOutput 테스트', () => {
+  describe('페이징 output 테스트', () => {
     const input: PaginationInput = { skip: 0, take: 10 };
     const repository = {
       count: jest.fn(),
@@ -46,7 +46,7 @@ describe('CommonService 테스트', () => {
       repository.count.mockClear();
     });
 
-    it('paginationOutput hasNext true 테스트', async () => {
+    it('페이징 다음 페이지 있음', async () => {
       repository.count.mockResolvedValue(100);
 
       const result = await commonService.paginationOutput(
@@ -64,7 +64,7 @@ describe('CommonService 테스트', () => {
       expect(repository.count).toHaveBeenCalledWith({ where });
     });
 
-    it('paginationOutput hasNext false 테스트', async () => {
+    it('페이징 다음 페이지 없음', async () => {
       repository.count.mockResolvedValue(5);
 
       const result = await commonService.paginationOutput(
