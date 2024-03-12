@@ -13,3 +13,5 @@ export const mockRepository = () => ({
 export type MockRepository<T extends ObjectLiteral> = Partial<
   Record<keyof Repository<T>, jest.Mock>
 >;
+
+export type MockService<T> = Partial<Record<keyof T, jest.Mock>>;

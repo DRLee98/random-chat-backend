@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { MockRepository, mockRepository } from 'test/utils';
+import { MockRepository, MockService, mockRepository } from 'test/utils';
 import { Language, User } from '../entites/user.entity';
 import { UserService } from '../user.service';
 import { AwsService } from 'src/aws/aws.service';
@@ -39,13 +39,13 @@ const user: User = {
 };
 
 const mockAwsService = () => ({
-  uploadFile: jest.fn(() => Promise.resolve({ ok: true, url: uploadFileUrl })),
+  uploadFile: jest.fn(),
 });
 
 describe('UserService 테스트', () => {
   let userService: UserService;
   let userRepository: MockRepository<User>;
-  let awsService: AwsService;
+  let awsService: MockService<AwsService>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -63,7 +63,7 @@ describe('UserService 테스트', () => {
       ],
     }).compile();
 
-    userService = module.get<UserService>(UserService);
+    userService = module.get(UserService);
     userRepository = module.get(getRepositoryToken(User));
     awsService = module.get(AwsService);
   });
@@ -172,7 +172,9 @@ describe('UserService 테스트', () => {
       expect(awsService.uploadFile).toHaveBeenCalledTimes(0);
     });
 
-    it('유저 생성 (프로필 이미지)', async () => {
+    it('유저 생성 (프로필 이미지 업로드)', async () => {
+      awsService.uploadFile.mockResolvedValue({ ok: true, url: uploadFileUrl });
+
       const profile: Upload['promise'] = Promise.resolve({
         filename: 'test.jpg',
         mimetype: 'image/jpeg',
@@ -188,6 +190,56 @@ describe('UserService 테스트', () => {
       const resultUserData = {
         ...input,
         profileUrl: uploadFileUrl,
+      };
+
+      userRepository.findOne.mockResolvedValue(null);
+      userRepository.create.mockReturnValue(resultUserData);
+      userRepository.save.mockResolvedValue(resultUserData);
+
+      const result = await userService.createUser(inputWithProfile);
+
+      expect(result.ok).toEqual(true);
+      expect(result.user).toEqual(resultUserData);
+      expect(result.error).toEqual(undefined);
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(2);
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { socialId: inputWithProfile.socialId },
+      });
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { nickname: inputWithProfile.nickname },
+      });
+
+      expect(userRepository.create).toHaveBeenCalledTimes(1);
+      expect(userRepository.create).toHaveBeenCalledWith(resultUserData);
+
+      expect(userRepository.save).toHaveBeenCalledTimes(1);
+      expect(userRepository.save).toHaveBeenCalledWith(resultUserData);
+
+      expect(awsService.uploadFile).toHaveBeenCalledTimes(1);
+      expect(awsService.uploadFile).toHaveBeenCalledWith(
+        profile,
+        getProfilePath(inputWithProfile.socialId),
+      );
+    });
+
+    it('유저 생성 (프로필 이미지 업로드 실패)', async () => {
+      awsService.uploadFile.mockResolvedValue({ ok: false });
+
+      const profile: Upload['promise'] = Promise.resolve({
+        filename: 'test.jpg',
+        mimetype: 'image/jpeg',
+        encoding: '7bit',
+        createReadStream: jest.fn(),
+      });
+
+      const inputWithProfile = {
+        ...input,
+        profile,
+      };
+
+      const resultUserData = {
+        ...input,
       };
 
       userRepository.findOne.mockResolvedValue(null);
@@ -284,7 +336,9 @@ describe('UserService 테스트', () => {
       expect(awsService.uploadFile).toHaveBeenCalledTimes(0);
     });
 
-    it('유저 수정 (프로필 이미지)', async () => {
+    it('유저 수정 (프로필 이미지 업로드)', async () => {
+      awsService.uploadFile.mockResolvedValue({ ok: true, url: uploadFileUrl });
+
       const inputWithProfile = {
         ...input,
         profile,
@@ -293,6 +347,44 @@ describe('UserService 테스트', () => {
       const inputWithProfileUrl = {
         ...input,
         profileUrl: uploadFileUrl,
+      };
+
+      userRepository.findOne.mockResolvedValueOnce(null);
+      userRepository.update.mockReturnValue(inputWithProfileUrl);
+
+      const result = await userService.updateUser(inputWithProfile, user);
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { nickname: input.nickname },
+      });
+
+      expect(userRepository.update).toHaveBeenCalledTimes(1);
+      expect(userRepository.update).toHaveBeenCalledWith(
+        user.id,
+        inputWithProfileUrl,
+      );
+
+      expect(awsService.uploadFile).toHaveBeenCalledTimes(1);
+      expect(awsService.uploadFile).toHaveBeenCalledWith(
+        profile,
+        getProfilePath(user.socialId),
+      );
+    });
+
+    it('유저 수정 (프로필 이미지 업로드 실패)', async () => {
+      awsService.uploadFile.mockResolvedValue({ ok: false });
+
+      const inputWithProfile = {
+        ...input,
+        profile,
+      };
+
+      const inputWithProfileUrl = {
+        ...input,
       };
 
       userRepository.findOne.mockResolvedValueOnce(null);
