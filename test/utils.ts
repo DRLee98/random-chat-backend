@@ -7,6 +7,7 @@ export const mockRepository = () => ({
   create: jest.fn(),
   update: jest.fn(),
   softDelete: jest.fn(),
+  count: jest.fn(),
 });
 
 export type MockRepository<T extends ObjectLiteral> = Partial<

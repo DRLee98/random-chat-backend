@@ -10,6 +10,8 @@ import { getProfilePath } from '../utils';
 import { Upload } from 'graphql-upload';
 import { UpdateUserInput } from '../dtos/update-user.dto';
 import { ToggleBlockUserInput } from '../dtos/toggle-block-user.dto';
+import { UserProfileInput } from '../dtos/user-profile.dto';
+import * as utilFn from '../utils';
 
 const uploadFileUrl = 'file url';
 
@@ -77,6 +79,26 @@ describe('UserService 테스트', () => {
       socialPlatform: user.socialPlatform,
       nickname: user.nickname,
     };
+
+    it('catch 에러', async () => {
+      userRepository.findOne.mockRejectedValue('error');
+
+      const result = await userService.createUser(input);
+
+      expect(result.ok).toEqual(false);
+      expect(result.user).toEqual(undefined);
+      expect(result.error).toEqual('error');
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { socialId: input.socialId },
+      });
+
+      expect(userRepository.create).toHaveBeenCalledTimes(0);
+      expect(userRepository.save).toHaveBeenCalledTimes(0);
+
+      expect(awsService.uploadFile).toHaveBeenCalledTimes(0);
+    });
 
     it('이미 가입한 유저인 경우', async () => {
       userRepository.findOne.mockResolvedValue(input);
@@ -206,6 +228,24 @@ describe('UserService 테스트', () => {
       bio: 'test bio',
     };
 
+    it('catch 에러', async () => {
+      userRepository.findOne.mockRejectedValue('error');
+
+      const result = await userService.updateUser(input, user);
+
+      expect(result.ok).toEqual(false);
+      expect(result.error).toEqual('error');
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { nickname: input.nickname },
+      });
+
+      expect(userRepository.update).toHaveBeenCalledTimes(0);
+
+      expect(awsService.uploadFile).toHaveBeenCalledTimes(0);
+    });
+
     it('닉네임이 중복된 경우', async () => {
       userRepository.findOne.mockResolvedValueOnce(user);
 
@@ -283,6 +323,18 @@ describe('UserService 테스트', () => {
   });
 
   describe('유저 삭제 테스트', () => {
+    it('catch 에러', async () => {
+      userRepository.softDelete.mockRejectedValue('error');
+
+      const result = await userService.deleteUser(user);
+
+      expect(result.ok).toEqual(false);
+      expect(result.error).toEqual('error');
+
+      expect(userRepository.softDelete).toHaveBeenCalledTimes(1);
+      expect(userRepository.softDelete).toHaveBeenCalledWith(user.id);
+    });
+
     it('유저 삭제', async () => {
       const result = await userService.deleteUser(user);
 
@@ -303,6 +355,19 @@ describe('UserService 테스트', () => {
       ...user,
       id: input.id,
     };
+
+    it('catch 에러', async () => {
+      userRepository.findOne.mockRejectedValue('error');
+
+      const result = await userService.toggleBlockUser(input, user);
+
+      expect(result.ok).toEqual(false);
+      expect(result.error).toEqual('error');
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+
+      expect(userRepository.save).toHaveBeenCalledTimes(0);
+    });
 
     it('차단하려는 유저가 존재하지 않을 경우', async () => {
       userRepository.findOne.mockResolvedValueOnce(user);
@@ -361,7 +426,7 @@ describe('UserService 테스트', () => {
     });
 
     it('유저 차단 후 차단 해제', async () => {
-      let userData = user;
+      let userData = { ...user };
 
       userRepository.findOne.mockResolvedValueOnce(userData);
       userRepository.findOne.mockResolvedValueOnce(blockUser);
@@ -398,6 +463,186 @@ describe('UserService 테스트', () => {
       expect(userRepository.save).toHaveBeenCalledWith({
         ...user,
         blockUsers: [],
+      });
+    });
+  });
+
+  describe('내 정보 조회 테스트', () => {
+    it('catch 에러', async () => {
+      userRepository.findOne.mockRejectedValue('error');
+
+      const result = await userService.me(user);
+
+      expect(result.ok).toEqual(false);
+      expect(result.me).toEqual(undefined);
+      expect(result.error).toEqual('error');
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('내 정보 조회 실패', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      const result = await userService.me(user);
+
+      expect(result.ok).toEqual(false);
+      expect(result.me).toEqual(undefined);
+      expect(typeof result.error).toBe('string');
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('내 정보 조회 (차단 유저 없음)', async () => {
+      const { blockUsers, ...rest } = user;
+      const resultUser = {
+        ...rest,
+        blockUserIds: [],
+      };
+
+      userRepository.findOne.mockResolvedValue(user);
+
+      const result = await userService.me(user);
+
+      expect(result.ok).toEqual(true);
+      expect(result.me).toEqual(resultUser);
+      expect(result.error).toEqual(undefined);
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('내 정보 조회 (차단 유저 있음)', async () => {
+      const { blockUsers, ...rest } = user;
+      const resultUser = {
+        ...rest,
+        blockUserIds: [user.id],
+      };
+
+      userRepository.findOne.mockResolvedValue({ ...user, blockUsers: [user] });
+
+      const result = await userService.me(user);
+
+      expect(result.ok).toEqual(true);
+      expect(result.me).toEqual(resultUser);
+      expect(result.error).toEqual(undefined);
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    describe('내 정보 상세 조회 테스트', () => {
+      it('catch 에러', async () => {
+        userRepository.findOne.mockRejectedValue('error');
+
+        const result = await userService.meDetail(user);
+
+        expect(result.ok).toEqual(false);
+        expect(result.me).toEqual(undefined);
+        expect(result.error).toEqual('error');
+
+        expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      });
+
+      it('내 정보 상세 조회', async () => {
+        userRepository.findOne.mockResolvedValue(user);
+
+        const result = await userService.meDetail(user);
+
+        expect(result.ok).toEqual(true);
+        expect(result.me).toEqual(user);
+        expect(result.error).toEqual(undefined);
+
+        expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe('유저 정보 조회 테스트', () => {
+    const input: UserProfileInput = {
+      id: user.id,
+    };
+
+    it('catch 에러', async () => {
+      userRepository.findOne.mockRejectedValue('error');
+
+      const result = await userService.userProfile(input);
+
+      expect(result.ok).toEqual(false);
+      expect(result.user).toEqual(undefined);
+      expect(result.error).toEqual('error');
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { id: input.id },
+      });
+    });
+
+    it('존재하지 않는 유저인 경우', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      const result = await userService.userProfile(input);
+
+      expect(result.ok).toEqual(false);
+      expect(result.user).toEqual(undefined);
+      expect(typeof result.error).toBe('string');
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { id: input.id },
+      });
+    });
+
+    it('유저 정보 조회', async () => {
+      userRepository.findOne.mockResolvedValue(user);
+
+      const result = await userService.userProfile(input);
+
+      expect(result.ok).toEqual(true);
+      expect(result.user).toEqual(user);
+      expect(result.error).toEqual(undefined);
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { id: input.id },
+      });
+    });
+  });
+
+  describe('랜덤 닉네임 생성 테스트', () => {
+    const spyFn = jest.spyOn(utilFn, 'randomNameGenerator');
+
+    beforeEach(() => {
+      spyFn.mockClear();
+    });
+
+    it('랜덤 닉네임 생성', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      const result = await userService.randomNickname();
+
+      expect(result.ok).toEqual(true);
+      expect(typeof result.nickname).toBe('string');
+
+      expect(spyFn).toHaveBeenCalledTimes(1);
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { nickname: result.nickname },
+      });
+    });
+
+    it('랜덤 닉네임 생성 (중복 값이 있을 경우)', async () => {
+      userRepository.findOne.mockResolvedValueOnce(user);
+      userRepository.findOne.mockResolvedValueOnce(null);
+
+      const result = await userService.randomNickname();
+
+      expect(result.ok).toEqual(true);
+      expect(typeof result.nickname).toBe('string');
+
+      expect(spyFn).toHaveBeenCalledTimes(2);
+
+      expect(userRepository.findOne).toHaveBeenCalledTimes(2);
+      expect(userRepository.findOne).toHaveBeenLastCalledWith({
+        where: { nickname: result.nickname },
       });
     });
   });
