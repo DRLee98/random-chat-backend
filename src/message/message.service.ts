@@ -155,9 +155,12 @@ export class MessageService {
 
     const newMessages = await Promise.all(
       messages.map(async (message) => {
-        message.readUsersId.push(userId);
-        await this.messageRepository.save(message);
-        return { id: message.id, readUsersId: message.readUsersId };
+        const newMessage = {
+          ...message,
+          readUsersId: [...message.readUsersId, userId],
+        };
+        await this.messageRepository.save(newMessage);
+        return { id: newMessage.id, readUsersId: newMessage.readUsersId };
       }),
     );
 
