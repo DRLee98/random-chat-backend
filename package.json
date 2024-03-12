@@ -90,6 +90,7 @@
       "coverage",
       "<rootDir>/src/main.ts",
       ".module.ts",
+      ".constants.ts",
       ".eslintrc.js"
     ],
     "coverageDirectory": "./coverage",
