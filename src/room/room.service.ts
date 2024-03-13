@@ -180,8 +180,8 @@ export class RoomService {
 
       // 랜덤한 유저 선택
       const targetUserId =
-        userList[Math.floor(Math.random() * userList.length)];
-      const targetUser = await this.userService.findUserById(targetUserId.id);
+        userList[Math.floor(Math.random() * userList.length)].id;
+      const targetUser = await this.userService.findUserById(targetUserId);
 
       const myRoom = this.userRoomRepository.create({
         user,
@@ -381,33 +381,34 @@ export class RoomService {
     userId: string,
     message: string,
   ) {
-    const room = await this.roomRepository.findOne({
+    const userRooms = await this.userRoomRepository.find({
       select: {
-        userRooms: {
+        id: true,
+        newMessage: true,
+        user: {
           id: true,
-          newMessage: true,
-          user: {
-            id: true,
-          },
+        },
+        room: {
+          id: true,
         },
       },
       where: {
-        id: roomId,
+        room: {
+          id: roomId,
+        },
+        user: {
+          id: Not(userId),
+        },
       },
       relations: {
-        userRooms: {
-          user: true,
-        },
+        user: true,
+        room: true,
       },
     });
 
-    if (!room) return;
+    if (userRooms.length === 0) return;
 
-    const targetUserRoom = room.userRooms.filter(
-      (item) => item.user.id !== userId,
-    );
-
-    targetUserRoom.forEach(async (item) => {
+    userRooms.forEach(async (item) => {
       const newMessageCount = item.newMessage + 1;
 
       await this.userRoomRepository.update(item.id, {

@@ -84,12 +84,15 @@
     ],
     "coveragePathIgnorePatterns": [
       "node_modules",
+      "dist",
+      "test",
       "test-config",
       "dtos",
       "entites",
       "coverage",
       "<rootDir>/src/main.ts",
       ".module.ts",
+      "resolver.ts",
       ".constants.ts",
       ".eslintrc.js"
     ],
