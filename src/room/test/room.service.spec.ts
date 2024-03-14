@@ -14,6 +14,7 @@ import { Language, User } from 'src/user/entites/user.entity';
 import { MessageType } from 'src/message/entites/message.entity';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from '../room.constants';
 import { RoomDetailInput } from '../dtos/room-detail.dto';
+import { MyRoomsInput } from '../dtos/my-rooms.dto';
 
 const user: User = {
   id: 'xx',
@@ -102,6 +103,111 @@ describe('RoomService 테스트', () => {
   });
 
   describe('참여중인 방 조회 테스트', () => {
+    it('참여중인 방 조회', async () => {
+      const input: MyRoomsInput = {
+        skip: 0,
+        take: 10,
+      };
+
+      const rooms = [
+        {
+          id: '1',
+          name: 'unPinned',
+          pinnedAt: null,
+          room: { updatedAt: new Date(2024, 1, 7) },
+        },
+        {
+          id: '2',
+          name: 'unPinned2',
+          pinnedAt: null,
+          room: { updatedAt: new Date(2024, 1, 4) },
+        },
+        {
+          id: '3',
+          name: 'pinned',
+          pinnedAt: new Date(2024, 1, 1),
+          room: { updatedAt: new Date(2024, 1, 4) },
+        },
+        {
+          id: '4',
+          name: 'pinned2',
+          pinnedAt: new Date(2024, 1, 1),
+          room: { updatedAt: new Date(2024, 1, 2) },
+        },
+        {
+          id: '5',
+          name: 'pinned3',
+          pinnedAt: new Date(2024, 1, 3),
+          room: { updatedAt: new Date(2024, 1, 1) },
+        },
+        {
+          id: '6',
+          name: 'unPinned3',
+          pinnedAt: null,
+          room: { updatedAt: new Date(2024, 1, 1) },
+        },
+      ];
+
+      const resultRooms = [
+        {
+          id: '3',
+          name: 'pinned',
+          pinnedAt: new Date(2024, 1, 1),
+          room: { updatedAt: new Date(2024, 1, 4) },
+        },
+        {
+          id: '5',
+          name: 'pinned3',
+          pinnedAt: new Date(2024, 1, 3),
+          room: { updatedAt: new Date(2024, 1, 1) },
+        },
+        {
+          id: '4',
+          name: 'pinned2',
+          pinnedAt: new Date(2024, 1, 1),
+          room: { updatedAt: new Date(2024, 1, 2) },
+        },
+        {
+          id: '1',
+          name: 'unPinned',
+          pinnedAt: null,
+          room: { updatedAt: new Date(2024, 1, 7) },
+        },
+        {
+          id: '2',
+          name: 'unPinned2',
+          pinnedAt: null,
+          room: { updatedAt: new Date(2024, 1, 4) },
+        },
+        {
+          id: '6',
+          name: 'unPinned3',
+          pinnedAt: null,
+          room: { updatedAt: new Date(2024, 1, 1) },
+        },
+      ].map((room) => ({
+        ...room,
+        lastMessage: 'last message',
+        users: [user],
+      }));
+
+      userRoomRepository.find.mockResolvedValue(rooms);
+      messageService.findLastMessage.mockResolvedValue('last message');
+      userService.findUserByRoomId.mockResolvedValue([user]);
+
+      const result = await roomService.myRooms(input, user);
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+      expect(result.rooms).toEqual(resultRooms);
+
+      expect(userRoomRepository.find).toHaveBeenCalledTimes(1);
+      expect(messageService.findLastMessage).toHaveBeenCalledTimes(
+        rooms.length,
+      );
+      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(rooms.length);
+    });
+
     describe('방 상세 정보 조회 테스트', () => {
       const input: RoomDetailInput = {
         roomId: 'test',
