@@ -472,7 +472,7 @@ describe('RoomService 테스트', () => {
 
       expect(userRoomRepository.findOne).toHaveBeenCalledTimes(1);
 
-      const { userRoomId, pinned, ...data } = input;
+      const { userRoomId, pinned: _, ...data } = input;
       expect(userRoomRepository.update).toHaveBeenCalledTimes(1);
       expect(userRoomRepository.update).toHaveBeenCalledWith(userRoomId, {
         ...data,
@@ -492,7 +492,7 @@ describe('RoomService 테스트', () => {
 
       expect(userRoomRepository.findOne).toHaveBeenCalledTimes(1);
 
-      const { userRoomId, pinned, ...data } = input;
+      const { userRoomId, pinned: _, ...data } = input;
       expect(userRoomRepository.update).toHaveBeenCalledTimes(1);
       expect(userRoomRepository.update).toHaveBeenCalledWith(userRoomId, {
         ...data,

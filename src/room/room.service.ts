@@ -325,7 +325,7 @@ export class RoomService {
       });
 
       let myUserRoom = null;
-      let unDeletedUserRooms = [];
+      const unDeletedUserRooms = [];
 
       userRooms.forEach((room) => {
         if (room.user.id === user.id) {

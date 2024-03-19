@@ -28,7 +28,7 @@ export class MyRoom extends OmitType(UserRoom, ['user'], ObjectType) {
   users: SimpleUser[];
 
   @Field(() => String)
-  lastMessage: String;
+  lastMessage: string;
 }
 
 @ObjectType()

@@ -3,6 +3,6 @@ import { CoreOutput } from 'src/common/dtos/output.dto';
 
 @ObjectType()
 export class UploadFileOutput extends CoreOutput {
-  @Field((type) => String, { nullable: true })
+  @Field(() => String, { nullable: true })
   url?: string;
 }

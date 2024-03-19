@@ -518,7 +518,7 @@ describe('UserService 테스트', () => {
     });
 
     it('유저 차단 후 차단 해제', async () => {
-      let userData = { ...user };
+      const userData = { ...user };
 
       userRepository.findOne.mockResolvedValueOnce(userData);
       userRepository.findOne.mockResolvedValueOnce(blockUser);
@@ -585,7 +585,7 @@ describe('UserService 테스트', () => {
     });
 
     it('내 정보 조회 (차단 유저 없음)', async () => {
-      const { blockUsers, ...rest } = user;
+      const { blockUsers: _, ...rest } = user;
       const resultUser = {
         ...rest,
         blockUserIds: [],
@@ -603,7 +603,7 @@ describe('UserService 테스트', () => {
     });
 
     it('내 정보 조회 (차단 유저 있음)', async () => {
-      const { blockUsers, ...rest } = user;
+      const { blockUsers: _, ...rest } = user;
       const resultUser = {
         ...rest,
         blockUserIds: [user.id],
