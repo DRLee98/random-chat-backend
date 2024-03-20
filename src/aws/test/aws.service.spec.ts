@@ -2,9 +2,9 @@ import { Test } from '@nestjs/testing';
 import { AwsService } from '../aws.service';
 import { ConfigService } from '@nestjs/config';
 import { CommonService } from 'src/common/common.service';
-import { Upload } from 'graphql-upload';
 import * as utils from '../utils';
 import * as AWS from 'aws-sdk';
+import { mockProfile } from 'test/mockData';
 
 const testRegion = 'region';
 const testAccessKey = 'accessKey';
@@ -66,16 +66,8 @@ describe('AwsService 테스트', () => {
   });
 
   it('파일 업로드 테스트', async () => {
-    const filename = 'test ##.jpg';
+    const filename = (await mockProfile).filename;
     const folder = 'test-folder';
-    const testFile: Upload['promise'] = new Promise((resolve) =>
-      resolve({
-        filename,
-        mimetype: 'image/jpeg',
-        encoding: '7bit',
-        createReadStream: jest.fn(),
-      }),
-    );
     const objectName = `${folder}/${filename}`;
     const buffer = Buffer.from('test');
 
@@ -86,7 +78,7 @@ describe('AwsService 테스트', () => {
       })),
     });
 
-    const result = await awsService.uploadFile(testFile, folder);
+    const result = await awsService.uploadFile(mockProfile, folder);
 
     expect(result.ok).toEqual(true);
     expect(result.error).toEqual(undefined);

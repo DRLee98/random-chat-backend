@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MockRepository, MockService, mockRepository } from 'test/utils';
-import { Language, User } from '../entites/user.entity';
+import { User } from '../entites/user.entity';
 import { UserService } from '../user.service';
 import { AwsService } from 'src/aws/aws.service';
 import { CommonService } from 'src/common/common.service';
@@ -12,31 +12,9 @@ import { UpdateUserInput } from '../dtos/update-user.dto';
 import { ToggleBlockUserInput } from '../dtos/toggle-block-user.dto';
 import { UserProfileInput } from '../dtos/user-profile.dto';
 import * as utilFn from '../utils';
+import { mockProfile, mockUser } from 'test/mockData';
 
 const uploadFileUrl = 'file url';
-
-const profile: Upload['promise'] = Promise.resolve({
-  filename: 'test.jpg',
-  mimetype: 'image/jpeg',
-  encoding: '7bit',
-  createReadStream: jest.fn(),
-});
-
-const user: User = {
-  id: 'xx',
-  socialId: 'xxxx',
-  socialPlatform: 'test',
-  nickname: 'test',
-  allowMessage: true,
-  language: Language.ko,
-  autoTranslation: false,
-  blockUsers: [],
-  rooms: [],
-  messages: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  deletedAt: null,
-};
 
 const mockAwsService = () => ({
   uploadFile: jest.fn(),
@@ -75,9 +53,9 @@ describe('UserService 테스트', () => {
 
   describe('유저 생성 테스트', () => {
     const input: CreateUserInput = {
-      socialId: user.socialId,
-      socialPlatform: user.socialPlatform,
-      nickname: user.nickname,
+      socialId: mockUser.socialId,
+      socialPlatform: mockUser.socialPlatform,
+      nickname: mockUser.nickname,
     };
 
     it('catch 에러', async () => {
@@ -283,7 +261,7 @@ describe('UserService 테스트', () => {
     it('catch 에러', async () => {
       userRepository.findOne.mockRejectedValue('error');
 
-      const result = await userService.updateUser(input, user);
+      const result = await userService.updateUser(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(result.error).toEqual('error');
@@ -299,9 +277,9 @@ describe('UserService 테스트', () => {
     });
 
     it('닉네임이 중복된 경우', async () => {
-      userRepository.findOne.mockResolvedValueOnce(user);
+      userRepository.findOne.mockResolvedValueOnce(mockUser);
 
-      const result = await userService.updateUser(input, user);
+      const result = await userService.updateUser(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -320,7 +298,7 @@ describe('UserService 테스트', () => {
       userRepository.findOne.mockResolvedValueOnce(null);
       userRepository.update.mockReturnValue(input);
 
-      const result = await userService.updateUser(input, user);
+      const result = await userService.updateUser(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -331,7 +309,7 @@ describe('UserService 테스트', () => {
       });
 
       expect(userRepository.update).toHaveBeenCalledTimes(1);
-      expect(userRepository.update).toHaveBeenCalledWith(user.id, input);
+      expect(userRepository.update).toHaveBeenCalledWith(mockUser.id, input);
 
       expect(awsService.uploadFile).toHaveBeenCalledTimes(0);
     });
@@ -341,7 +319,7 @@ describe('UserService 테스트', () => {
 
       const inputWithProfile = {
         ...input,
-        profile,
+        profile: mockProfile,
       };
 
       const inputWithProfileUrl = {
@@ -352,7 +330,7 @@ describe('UserService 테스트', () => {
       userRepository.findOne.mockResolvedValueOnce(null);
       userRepository.update.mockReturnValue(inputWithProfileUrl);
 
-      const result = await userService.updateUser(inputWithProfile, user);
+      const result = await userService.updateUser(inputWithProfile, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -364,14 +342,14 @@ describe('UserService 테스트', () => {
 
       expect(userRepository.update).toHaveBeenCalledTimes(1);
       expect(userRepository.update).toHaveBeenCalledWith(
-        user.id,
+        mockUser.id,
         inputWithProfileUrl,
       );
 
       expect(awsService.uploadFile).toHaveBeenCalledTimes(1);
       expect(awsService.uploadFile).toHaveBeenCalledWith(
-        profile,
-        getProfilePath(user.socialId),
+        mockProfile,
+        getProfilePath(mockUser.socialId),
       );
     });
 
@@ -380,7 +358,7 @@ describe('UserService 테스트', () => {
 
       const inputWithProfile = {
         ...input,
-        profile,
+        profile: mockProfile,
       };
 
       const inputWithProfileUrl = {
@@ -390,7 +368,7 @@ describe('UserService 테스트', () => {
       userRepository.findOne.mockResolvedValueOnce(null);
       userRepository.update.mockReturnValue(inputWithProfileUrl);
 
-      const result = await userService.updateUser(inputWithProfile, user);
+      const result = await userService.updateUser(inputWithProfile, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -402,14 +380,14 @@ describe('UserService 테스트', () => {
 
       expect(userRepository.update).toHaveBeenCalledTimes(1);
       expect(userRepository.update).toHaveBeenCalledWith(
-        user.id,
+        mockUser.id,
         inputWithProfileUrl,
       );
 
       expect(awsService.uploadFile).toHaveBeenCalledTimes(1);
       expect(awsService.uploadFile).toHaveBeenCalledWith(
-        profile,
-        getProfilePath(user.socialId),
+        mockProfile,
+        getProfilePath(mockUser.socialId),
       );
     });
   });
@@ -418,23 +396,23 @@ describe('UserService 테스트', () => {
     it('catch 에러', async () => {
       userRepository.softDelete.mockRejectedValue('error');
 
-      const result = await userService.deleteUser(user);
+      const result = await userService.deleteUser(mockUser);
 
       expect(result.ok).toEqual(false);
       expect(result.error).toEqual('error');
 
       expect(userRepository.softDelete).toHaveBeenCalledTimes(1);
-      expect(userRepository.softDelete).toHaveBeenCalledWith(user.id);
+      expect(userRepository.softDelete).toHaveBeenCalledWith(mockUser.id);
     });
 
     it('유저 삭제', async () => {
-      const result = await userService.deleteUser(user);
+      const result = await userService.deleteUser(mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
 
       expect(userRepository.softDelete).toHaveBeenCalledTimes(1);
-      expect(userRepository.softDelete).toHaveBeenCalledWith(user.id);
+      expect(userRepository.softDelete).toHaveBeenCalledWith(mockUser.id);
     });
   });
 
@@ -444,14 +422,14 @@ describe('UserService 테스트', () => {
     };
 
     const blockUser: User = {
-      ...user,
+      ...mockUser,
       id: input.id,
     };
 
     it('catch 에러', async () => {
       userRepository.findOne.mockRejectedValue('error');
 
-      const result = await userService.toggleBlockUser(input, user);
+      const result = await userService.toggleBlockUser(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(result.error).toEqual('error');
@@ -462,10 +440,10 @@ describe('UserService 테스트', () => {
     });
 
     it('차단하려는 유저가 존재하지 않을 경우', async () => {
-      userRepository.findOne.mockResolvedValueOnce(user);
+      userRepository.findOne.mockResolvedValueOnce(mockUser);
       userRepository.findOne.mockResolvedValueOnce(null);
 
-      const result = await userService.toggleBlockUser(input, user);
+      const result = await userService.toggleBlockUser(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -479,10 +457,10 @@ describe('UserService 테스트', () => {
     });
 
     it('차단하려는 유저가 자기 자신일 경우', async () => {
-      userRepository.findOne.mockResolvedValueOnce(user);
-      userRepository.findOne.mockResolvedValueOnce(user);
+      userRepository.findOne.mockResolvedValueOnce(mockUser);
+      userRepository.findOne.mockResolvedValueOnce(mockUser);
 
-      const result = await userService.toggleBlockUser(input, user);
+      const result = await userService.toggleBlockUser(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -496,10 +474,10 @@ describe('UserService 테스트', () => {
     });
 
     it('유저 차단', async () => {
-      userRepository.findOne.mockResolvedValueOnce(user);
+      userRepository.findOne.mockResolvedValueOnce(mockUser);
       userRepository.findOne.mockResolvedValueOnce(blockUser);
 
-      const result = await userService.toggleBlockUser(input, user);
+      const result = await userService.toggleBlockUser(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.updateBlockUsers).toEqual([blockUser]);
@@ -512,13 +490,13 @@ describe('UserService 테스트', () => {
 
       expect(userRepository.save).toHaveBeenCalledTimes(1);
       expect(userRepository.save).toHaveBeenCalledWith({
-        ...user,
+        ...mockUser,
         blockUsers: [blockUser],
       });
     });
 
     it('유저 차단 후 차단 해제', async () => {
-      const userData = { ...user };
+      const userData = { ...mockUser };
 
       userRepository.findOne.mockResolvedValueOnce(userData);
       userRepository.findOne.mockResolvedValueOnce(blockUser);
@@ -549,11 +527,11 @@ describe('UserService 테스트', () => {
 
       expect(userRepository.save).toHaveBeenCalledTimes(2);
       expect(userRepository.save).toHaveBeenCalledWith({
-        ...user,
+        ...mockUser,
         blockUsers: [blockUser],
       });
       expect(userRepository.save).toHaveBeenCalledWith({
-        ...user,
+        ...mockUser,
         blockUsers: [],
       });
     });
@@ -563,7 +541,7 @@ describe('UserService 테스트', () => {
     it('catch 에러', async () => {
       userRepository.findOne.mockRejectedValue('error');
 
-      const result = await userService.me(user);
+      const result = await userService.me(mockUser);
 
       expect(result.ok).toEqual(false);
       expect(result.me).toEqual(undefined);
@@ -575,7 +553,7 @@ describe('UserService 테스트', () => {
     it('내 정보 조회 실패', async () => {
       userRepository.findOne.mockResolvedValue(null);
 
-      const result = await userService.me(user);
+      const result = await userService.me(mockUser);
 
       expect(result.ok).toEqual(false);
       expect(result.me).toEqual(undefined);
@@ -585,15 +563,15 @@ describe('UserService 테스트', () => {
     });
 
     it('내 정보 조회 (차단 유저 없음)', async () => {
-      const { blockUsers: _, ...rest } = user;
+      const { blockUsers: _, ...rest } = mockUser;
       const resultUser = {
         ...rest,
         blockUserIds: [],
       };
 
-      userRepository.findOne.mockResolvedValue(user);
+      userRepository.findOne.mockResolvedValue(mockUser);
 
-      const result = await userService.me(user);
+      const result = await userService.me(mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.me).toEqual(resultUser);
@@ -603,15 +581,18 @@ describe('UserService 테스트', () => {
     });
 
     it('내 정보 조회 (차단 유저 있음)', async () => {
-      const { blockUsers: _, ...rest } = user;
+      const { blockUsers: _, ...rest } = mockUser;
       const resultUser = {
         ...rest,
-        blockUserIds: [user.id],
+        blockUserIds: [mockUser.id],
       };
 
-      userRepository.findOne.mockResolvedValue({ ...user, blockUsers: [user] });
+      userRepository.findOne.mockResolvedValue({
+        ...mockUser,
+        blockUsers: [mockUser],
+      });
 
-      const result = await userService.me(user);
+      const result = await userService.me(mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.me).toEqual(resultUser);
@@ -624,7 +605,7 @@ describe('UserService 테스트', () => {
       it('catch 에러', async () => {
         userRepository.findOne.mockRejectedValue('error');
 
-        const result = await userService.meDetail(user);
+        const result = await userService.meDetail(mockUser);
 
         expect(result.ok).toEqual(false);
         expect(result.me).toEqual(undefined);
@@ -634,12 +615,12 @@ describe('UserService 테스트', () => {
       });
 
       it('내 정보 상세 조회', async () => {
-        userRepository.findOne.mockResolvedValue(user);
+        userRepository.findOne.mockResolvedValue(mockUser);
 
-        const result = await userService.meDetail(user);
+        const result = await userService.meDetail(mockUser);
 
         expect(result.ok).toEqual(true);
-        expect(result.me).toEqual(user);
+        expect(result.me).toEqual(mockUser);
         expect(result.error).toEqual(undefined);
 
         expect(userRepository.findOne).toHaveBeenCalledTimes(1);
@@ -649,7 +630,7 @@ describe('UserService 테스트', () => {
 
   describe('유저 정보 조회 테스트', () => {
     const input: UserProfileInput = {
-      id: user.id,
+      id: mockUser.id,
     };
 
     it('catch 에러', async () => {
@@ -683,12 +664,12 @@ describe('UserService 테스트', () => {
     });
 
     it('유저 정보 조회', async () => {
-      userRepository.findOne.mockResolvedValue(user);
+      userRepository.findOne.mockResolvedValue(mockUser);
 
       const result = await userService.userProfile(input);
 
       expect(result.ok).toEqual(true);
-      expect(result.user).toEqual(user);
+      expect(result.user).toEqual(mockUser);
       expect(result.error).toEqual(undefined);
 
       expect(userRepository.findOne).toHaveBeenCalledTimes(1);
@@ -722,7 +703,7 @@ describe('UserService 테스트', () => {
     });
 
     it('랜덤 닉네임 생성 (중복 값이 있을 경우)', async () => {
-      userRepository.findOne.mockResolvedValueOnce(user);
+      userRepository.findOne.mockResolvedValueOnce(mockUser);
       userRepository.findOne.mockResolvedValueOnce(null);
 
       const result = await userService.randomNickname();

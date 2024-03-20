@@ -40,6 +40,10 @@ export class User extends CoreEntity {
   socialPlatform: string;
 
   @Field(() => String)
+  @Column()
+  fcmToken: string;
+
+  @Field(() => String)
   @Column({ unique: true })
   nickname: string;
 

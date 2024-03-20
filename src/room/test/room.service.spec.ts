@@ -15,22 +15,7 @@ import { MessageType } from 'src/message/entites/message.entity';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from '../room.constants';
 import { RoomDetailInput } from '../dtos/room-detail.dto';
 import { MyRoomsInput } from '../dtos/my-rooms.dto';
-
-const user: User = {
-  id: 'xx',
-  socialId: 'xxxx',
-  socialPlatform: 'test',
-  nickname: 'test',
-  allowMessage: true,
-  language: Language.ko,
-  autoTranslation: false,
-  blockUsers: [],
-  rooms: [],
-  messages: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  deletedAt: null,
-};
+import { mockUser } from 'test/mockData';
 
 const mockUserService = () => ({
   findUserByRoomId: jest.fn(),
@@ -188,14 +173,14 @@ describe('RoomService 테스트', () => {
       ].map((room) => ({
         ...room,
         lastMessage: 'last message',
-        users: [user],
+        users: [mockUser],
       }));
 
       userRoomRepository.find.mockResolvedValue(rooms);
       messageService.findLastMessage.mockResolvedValue('last message');
-      userService.findUserByRoomId.mockResolvedValue([user]);
+      userService.findUserByRoomId.mockResolvedValue([mockUser]);
 
-      const result = await roomService.myRooms(input, user);
+      const result = await roomService.myRooms(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -216,7 +201,7 @@ describe('RoomService 테스트', () => {
       it('존재하지 않는 방인 경우', async () => {
         userRoomRepository.findOne.mockResolvedValue(null);
 
-        const result = await roomService.roomDetail(input, user);
+        const result = await roomService.roomDetail(input, mockUser);
 
         expect(result.ok).toEqual(false);
         expect(typeof result.error).toBe('string');
@@ -229,15 +214,15 @@ describe('RoomService 테스트', () => {
       it('방 상세 정보 조회', async () => {
         const userRoom = { id: 'user room' };
         userRoomRepository.findOne.mockResolvedValue(userRoom);
-        userService.findUserByRoomId.mockResolvedValue([user]);
+        userService.findUserByRoomId.mockResolvedValue([mockUser]);
 
-        const result = await roomService.roomDetail(input, user);
+        const result = await roomService.roomDetail(input, mockUser);
 
         expect(result.ok).toEqual(true);
         expect(result.error).toEqual(undefined);
         expect(result.room).toEqual({
           userRoom,
-          users: [user],
+          users: [mockUser],
         });
 
         expect(userRoomRepository.findOne).toHaveBeenCalledTimes(1);
@@ -251,6 +236,7 @@ describe('RoomService 테스트', () => {
       id: 'target',
       socialId: 'target',
       socialPlatform: 'target',
+      fcmToken: 'token',
       nickname: 'target',
       allowMessage: true,
       language: Language.ko,
@@ -263,13 +249,13 @@ describe('RoomService 테스트', () => {
       deletedAt: null,
     };
     it('채팅 가능한 유저가 없는 경우', async () => {
-      userService.findUserById.mockReturnValueOnce(user);
+      userService.findUserById.mockReturnValueOnce(mockUser);
       userService.findBlockedMe.mockReturnValueOnce([]);
       roomRepository.find.mockResolvedValue([]);
       userRoomRepository.find.mockResolvedValue([]);
       userService.findChatEnabledUsers.mockResolvedValue([]);
 
-      const result = await roomService.createRandomRoom(user);
+      const result = await roomService.createRandomRoom(mockUser);
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -292,7 +278,7 @@ describe('RoomService 테스트', () => {
       const myRoom = { id: 'my room' };
       const targetRoom = { id: 'target room' };
       const room = { id: 'room' };
-      userService.findUserById.mockReturnValueOnce(user);
+      userService.findUserById.mockReturnValueOnce(mockUser);
       userService.findBlockedMe.mockReturnValueOnce([{ id: '1' }]);
       roomRepository.find.mockResolvedValue([{ id: 'xxx' }]);
       userRoomRepository.find.mockResolvedValue([{ user: { id: '3' } }]);
@@ -302,7 +288,7 @@ describe('RoomService 테스트', () => {
       userRoomRepository.create.mockReturnValueOnce(targetRoom);
       roomRepository.create.mockReturnValueOnce(room);
 
-      const result = await roomService.createRandomRoom(user);
+      const result = await roomService.createRandomRoom(mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toBe(undefined);
@@ -317,18 +303,18 @@ describe('RoomService 테스트', () => {
       expect(userRoomRepository.find).toHaveBeenCalledTimes(1);
       expect(userService.findChatEnabledUsers).toHaveBeenCalledTimes(1);
       expect(userService.findChatEnabledUsers).toHaveBeenCalledWith(
-        ['3', '1', user.id],
+        ['3', '1', mockUser.id],
         { select: { id: true } },
       );
 
       expect(userRoomRepository.create).toHaveBeenCalledTimes(2);
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(1, {
-        user,
+        user: mockUser,
         name: targetUser.nickname,
       });
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(2, {
         user: targetUser,
-        name: user.nickname,
+        name: mockUser.nickname,
       });
 
       expect(userRoomRepository.save).toHaveBeenCalledTimes(2);
@@ -349,7 +335,7 @@ describe('RoomService 테스트', () => {
           ...targetRoom,
           room,
           lastMessage: '',
-          users: [targetUser, user],
+          users: [targetUser, mockUser],
         },
       });
     });
@@ -359,7 +345,7 @@ describe('RoomService 테스트', () => {
       const myRoom = { id: 'my room' };
       const targetRoom = { id: 'target room' };
       const room = { id: 'room' };
-      userService.findUserById.mockReturnValueOnce(user);
+      userService.findUserById.mockReturnValueOnce(mockUser);
       userService.findBlockedMe.mockReturnValueOnce([
         { id: '1' },
         { id: '2' },
@@ -376,7 +362,7 @@ describe('RoomService 테스트', () => {
       userRoomRepository.create.mockReturnValueOnce(targetRoom);
       roomRepository.create.mockReturnValueOnce(room);
 
-      const result = await roomService.createRandomRoom(user);
+      const result = await roomService.createRandomRoom(mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toBe(undefined);
@@ -391,18 +377,18 @@ describe('RoomService 테스트', () => {
       expect(userRoomRepository.find).toHaveBeenCalledTimes(1);
       expect(userService.findChatEnabledUsers).toHaveBeenCalledTimes(1);
       expect(userService.findChatEnabledUsers).toHaveBeenCalledWith(
-        ['3', '2', '1', user.id],
+        ['3', '2', '1', mockUser.id],
         { select: { id: true } },
       );
 
       expect(userRoomRepository.create).toHaveBeenCalledTimes(2);
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(1, {
-        user,
+        user: mockUser,
         name: targetUser.nickname,
       });
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(2, {
         user: targetUser,
-        name: user.nickname,
+        name: mockUser.nickname,
       });
 
       expect(userRoomRepository.save).toHaveBeenCalledTimes(2);
@@ -423,7 +409,7 @@ describe('RoomService 테스트', () => {
           ...targetRoom,
           room,
           lastMessage: '',
-          users: [targetUser, user],
+          users: [targetUser, mockUser],
         },
       });
     });
@@ -433,7 +419,10 @@ describe('RoomService 테스트', () => {
     it('존재하지 않는 방인 경우', async () => {
       userRoomRepository.findOne.mockResolvedValue(null);
 
-      const result = await roomService.updateRoom({ userRoomId: 'test' }, user);
+      const result = await roomService.updateRoom(
+        { userRoomId: 'test' },
+        mockUser,
+      );
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -447,7 +436,7 @@ describe('RoomService 테스트', () => {
 
       userRoomRepository.findOne.mockResolvedValue({ id: 'test' });
 
-      const result = await roomService.updateRoom(input, user);
+      const result = await roomService.updateRoom(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -465,7 +454,7 @@ describe('RoomService 테스트', () => {
 
       userRoomRepository.findOne.mockResolvedValue({ id: 'test' });
 
-      const result = await roomService.updateRoom(input, user);
+      const result = await roomService.updateRoom(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -485,7 +474,7 @@ describe('RoomService 테스트', () => {
 
       userRoomRepository.findOne.mockResolvedValue({ id: 'test' });
 
-      const result = await roomService.updateRoom(input, user);
+      const result = await roomService.updateRoom(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -509,7 +498,7 @@ describe('RoomService 테스트', () => {
     it('존재하지 않는 방인 경우', async () => {
       roomRepository.findOne.mockResolvedValue(null);
 
-      const result = await roomService.deleteRoom(input, user);
+      const result = await roomService.deleteRoom(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -528,7 +517,7 @@ describe('RoomService 테스트', () => {
         { id: '1', user: { id: 'test user' } },
       ]);
 
-      const result = await roomService.deleteRoom(input, user);
+      const result = await roomService.deleteRoom(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -545,10 +534,10 @@ describe('RoomService 테스트', () => {
       roomRepository.findOne.mockResolvedValue({ id: 'test room' });
       userRoomRepository.find.mockResolvedValue([
         { id: '1', user: { id: 'test user' } },
-        { id: '2', user: { id: user.id } },
+        { id: '2', user: { id: mockUser.id } },
       ]);
 
-      const result = await roomService.deleteRoom(input, user);
+      const result = await roomService.deleteRoom(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -562,10 +551,10 @@ describe('RoomService 테스트', () => {
       expect(messageService.sendMessage).toHaveBeenCalledWith(
         {
           roomId: input.roomId,
-          contents: `${user.nickname}님이 채팅방을 나갔습니다.`,
+          contents: `${mockUser.nickname}님이 채팅방을 나갔습니다.`,
           type: MessageType.SYSTEM,
         },
-        user,
+        mockUser,
       );
 
       expect(roomRepository.softDelete).toHaveBeenCalledTimes(0);
@@ -575,10 +564,10 @@ describe('RoomService 테스트', () => {
     it('방 나간 후 방에 남은 유저가 없는 경우', async () => {
       roomRepository.findOne.mockResolvedValue({ id: 'test room' });
       userRoomRepository.find.mockResolvedValue([
-        { id: '2', user: { id: user.id } },
+        { id: '2', user: { id: mockUser.id } },
       ]);
 
-      const result = await roomService.deleteRoom(input, user);
+      const result = await roomService.deleteRoom(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -592,10 +581,10 @@ describe('RoomService 테스트', () => {
       expect(messageService.sendMessage).toHaveBeenCalledWith(
         {
           roomId: input.roomId,
-          contents: `${user.nickname}님이 채팅방을 나갔습니다.`,
+          contents: `${mockUser.nickname}님이 채팅방을 나갔습니다.`,
           type: MessageType.SYSTEM,
         },
-        user,
+        mockUser,
       );
 
       expect(roomRepository.softDelete).toHaveBeenCalledTimes(1);
@@ -609,7 +598,7 @@ describe('RoomService 테스트', () => {
     it('조건에 맞는 방이 없는 경우', async () => {
       userRoomRepository.find.mockResolvedValue([]);
 
-      await roomService.updateNewMesssageInUserRoom('test', user.id, 'msg');
+      await roomService.updateNewMesssageInUserRoom('test', mockUser.id, 'msg');
 
       expect(userRoomRepository.find).toHaveBeenCalledTimes(1);
       expect(userRoomRepository.update).toHaveBeenCalledTimes(0);
@@ -631,7 +620,7 @@ describe('RoomService 테스트', () => {
       ];
       userRoomRepository.find.mockResolvedValue(targetRooms);
 
-      await roomService.updateNewMesssageInUserRoom('test', user.id, 'msg');
+      await roomService.updateNewMesssageInUserRoom('test', mockUser.id, 'msg');
 
       expect(userRoomRepository.find).toHaveBeenCalledTimes(1);
 

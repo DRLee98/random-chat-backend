@@ -8,27 +8,11 @@ import { PubSub } from 'graphql-subscriptions';
 import { Message, MessageType } from '../entites/message.entity';
 import { PUB_SUB } from 'src/common/common.constants';
 import { NEW_MESSAGE, READ_MESSAGE } from '../message.constants';
-import { Language, User } from 'src/user/entites/user.entity';
 import { SendMessageInput } from '../dtos/send-message.dto';
 import { ViewMessagesInput } from '../dtos/view-messages.dto';
+import { mockUser } from 'test/mockData';
 
 const roomId = 'test room';
-
-const user: User = {
-  id: 'xx',
-  socialId: 'xxxx',
-  socialPlatform: 'test',
-  nickname: 'test',
-  allowMessage: true,
-  language: Language.ko,
-  autoTranslation: false,
-  blockUsers: [],
-  rooms: [],
-  messages: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  deletedAt: null,
-};
 
 const mockRoomService = () => ({
   checkValidRoom: jest.fn(),
@@ -87,7 +71,7 @@ describe('MessageService 테스트', () => {
     it('참여중인 방이 아닌 경우', async () => {
       roomService.checkValidRoom.mockResolvedValue(false);
 
-      const result = await messageService.viewMessages(input, user);
+      const result = await messageService.viewMessages(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -96,7 +80,7 @@ describe('MessageService 테스트', () => {
       expect(roomService.checkValidRoom).toHaveBeenCalledTimes(1);
       expect(roomService.checkValidRoom).toHaveBeenCalledWith(
         input.roomId,
-        user.id,
+        mockUser.id,
       );
 
       expect(messageRepository.find).toHaveBeenCalledTimes(0);
@@ -113,7 +97,7 @@ describe('MessageService 테스트', () => {
       roomService.checkValidRoom.mockResolvedValue(true);
       messageRepository.find.mockReturnValue(messages);
 
-      const result = await messageService.viewMessages(input, user);
+      const result = await messageService.viewMessages(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -122,7 +106,7 @@ describe('MessageService 테스트', () => {
       expect(roomService.checkValidRoom).toHaveBeenCalledTimes(1);
       expect(roomService.checkValidRoom).toHaveBeenCalledWith(
         input.roomId,
-        user.id,
+        mockUser.id,
       );
 
       expect(messageRepository.find).toHaveBeenCalledTimes(2);
@@ -130,7 +114,7 @@ describe('MessageService 테스트', () => {
       expect(roomService.resetNewMessageInUserRoom).toHaveBeenCalledTimes(1);
       expect(roomService.resetNewMessageInUserRoom).toHaveBeenCalledWith(
         input.roomId,
-        user.id,
+        mockUser.id,
       );
     });
   });
@@ -145,7 +129,7 @@ describe('MessageService 테스트', () => {
     it('참여중인 방이 아닌 경우', async () => {
       roomService.checkValidRoom.mockResolvedValue(false);
 
-      const result = await messageService.sendMessage(input, user);
+      const result = await messageService.sendMessage(input, mockUser);
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -154,7 +138,7 @@ describe('MessageService 테스트', () => {
       expect(roomService.checkValidRoom).toHaveBeenCalledTimes(1);
       expect(roomService.checkValidRoom).toHaveBeenCalledWith(
         input.roomId,
-        user.id,
+        mockUser.id,
       );
       expect(roomService.updateNewMesssageInUserRoom).toHaveBeenCalledTimes(0);
       expect(roomService.updateRoomUpdateAt).toHaveBeenCalledTimes(0);
@@ -168,15 +152,15 @@ describe('MessageService 테스트', () => {
         id: 'test message',
         contents: input.contents,
         type: input.type,
-        user: user,
+        user: mockUser,
         room: { id: input.roomId },
-        readUsersId: [user.id],
+        readUsersId: [mockUser.id],
       };
 
       roomService.checkValidRoom.mockResolvedValue(true);
       messageRepository.create.mockReturnValue(message);
 
-      const result = await messageService.sendMessage(input, user);
+      const result = await messageService.sendMessage(input, mockUser);
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
@@ -185,29 +169,22 @@ describe('MessageService 테스트', () => {
       expect(roomService.checkValidRoom).toHaveBeenCalledTimes(1);
       expect(roomService.checkValidRoom).toHaveBeenCalledWith(
         input.roomId,
-        user.id,
+        mockUser.id,
       );
 
       expect(roomService.updateNewMesssageInUserRoom).toHaveBeenCalledTimes(1);
       expect(roomService.updateNewMesssageInUserRoom).toHaveBeenCalledWith(
         input.roomId,
-        user.id,
+        mockUser.id,
         input.contents,
       );
 
       expect(roomService.updateRoomUpdateAt).toHaveBeenCalledTimes(1);
       expect(roomService.updateRoomUpdateAt).toHaveBeenCalledWith(input.roomId);
 
+      const { id: _, ...createMessageData } = message;
       expect(messageRepository.create).toHaveBeenCalledTimes(1);
-      expect(messageRepository.create).toHaveBeenCalledWith({
-        contents: input.contents,
-        type: input.type,
-        user,
-        room: {
-          id: input.roomId,
-        },
-        readUsersId: [user.id],
-      });
+      expect(messageRepository.create).toHaveBeenCalledWith(createMessageData);
 
       expect(messageRepository.save).toHaveBeenCalledTimes(1);
       expect(messageRepository.save).toHaveBeenCalledWith(message);
@@ -223,7 +200,7 @@ describe('MessageService 테스트', () => {
     it('읽지 않은 메시지가 없는 경우', async () => {
       messageRepository.find.mockResolvedValue([]);
 
-      const result = await messageService.readMessage(roomId, user.id);
+      const result = await messageService.readMessage(roomId, mockUser.id);
 
       expect(result).toEqual([]);
 
@@ -240,12 +217,12 @@ describe('MessageService 테스트', () => {
       ];
       const resultMessages = messages.map(({ id, readUsersId }) => ({
         id,
-        readUsersId: [...readUsersId, user.id],
+        readUsersId: [...readUsersId, mockUser.id],
       }));
 
       messageRepository.find.mockResolvedValue(messages);
 
-      const result = await messageService.readMessage(roomId, user.id);
+      const result = await messageService.readMessage(roomId, mockUser.id);
 
       expect(result).toEqual(resultMessages);
 
@@ -254,7 +231,7 @@ describe('MessageService 테스트', () => {
       messages.forEach(({ id, readUsersId }, i) => {
         expect(messageRepository.save).toHaveBeenNthCalledWith(i + 1, {
           id,
-          readUsersId: [...readUsersId, user.id],
+          readUsersId: [...readUsersId, mockUser.id],
         });
       });
 
@@ -263,7 +240,7 @@ describe('MessageService 테스트', () => {
         readMessage: {
           messages: resultMessages,
           roomId,
-          userId: user.id,
+          userId: mockUser.id,
         },
       });
     });
