@@ -55,6 +55,7 @@ describe('UserService 테스트', () => {
     const input: CreateUserInput = {
       socialId: mockUser.socialId,
       socialPlatform: mockUser.socialPlatform,
+      fcmToken: mockUser.fcmToken,
       nickname: mockUser.nickname,
     };
 

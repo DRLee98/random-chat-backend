@@ -13,6 +13,7 @@ import { Upload } from 'graphql-upload';
 @InputType()
 export class UpdateUserInput extends PartialType(
   PickType(User, [
+    'fcmToken',
     'nickname',
     'bio',
     'allowMessage',

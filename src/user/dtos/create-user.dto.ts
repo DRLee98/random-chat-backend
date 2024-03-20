@@ -8,6 +8,7 @@ import { Upload } from 'graphql-upload';
 export class CreateUserInput extends PickType(User, [
   'socialId',
   'socialPlatform',
+  'fcmToken',
 ]) {
   @Field(() => String)
   nickname: string;
