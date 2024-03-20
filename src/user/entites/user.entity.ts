@@ -39,9 +39,9 @@ export class User extends CoreEntity {
   @Column()
   socialPlatform: string;
 
-  @Field(() => String)
-  @Column()
-  fcmToken: string;
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
+  fcmToken?: string;
 
   @Field(() => String)
   @Column({ unique: true })
