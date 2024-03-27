@@ -63,12 +63,16 @@ export class RoomService {
             const lastMessage = await this.messageService.findLastMessage(
               room.id,
             );
-            const users = await this.userService.findUserByRoomId(room.id, {
-              select: {
-                id: true,
-                profileUrl: true,
+            const users = await this.userService.findUserByRoomId(
+              room.id,
+              {
+                select: {
+                  id: true,
+                  profileUrl: true,
+                },
               },
-            });
+              [user.id],
+            );
             return {
               ...item,
               room,

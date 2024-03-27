@@ -245,7 +245,7 @@ export class UserService {
 
   async findUserById(
     id: string,
-    options?: Omit<FindOneOptions<User>, 'were'>,
+    options?: Omit<FindOneOptions<User>, 'where'>,
   ): Promise<User | null> {
     const user = await this.userRepository.findOne({
       ...options,
@@ -257,7 +257,7 @@ export class UserService {
   async findUserBySocialId(
     socialId: string,
     socialPlatform: string,
-    options?: Omit<FindOneOptions<User>, 'were'>,
+    options?: Omit<FindOneOptions<User>, 'where'>,
   ): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { socialId, socialPlatform },
@@ -268,7 +268,7 @@ export class UserService {
 
   async findBlockedMe(
     id: string,
-    options?: Omit<FindOneOptions<User>, 'were'>,
+    options?: Omit<FindOneOptions<User>, 'where'>,
   ): Promise<User[]> {
     const user = await this.userRepository.find({
       ...options,
@@ -283,7 +283,7 @@ export class UserService {
 
   async findChatEnabledUsers(
     blockIds: string[],
-    options?: Omit<FindOneOptions<User>, 'were'>,
+    options?: Omit<FindOneOptions<User>, 'where'>,
   ): Promise<User[]> {
     const user = await this.userRepository.find({
       ...options,
@@ -294,11 +294,13 @@ export class UserService {
 
   async findUserByRoomId(
     id: string,
-    options?: Omit<FindOneOptions<User>, 'were'>,
+    options?: Omit<FindOneOptions<User>, 'where'>,
+    filterIds?: string[],
   ): Promise<User[]> {
     const user = await this.userRepository.find({
       ...options,
       where: {
+        id: Not(In(filterIds)),
         rooms: {
           room: {
             id,
