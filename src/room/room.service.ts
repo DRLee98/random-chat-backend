@@ -46,6 +46,10 @@ export class RoomService {
           },
         },
         order: {
+          pinnedAt: {
+            direction: 'DESC',
+            nulls: 'LAST',
+          },
           room: {
             updatedAt: 'DESC',
           },

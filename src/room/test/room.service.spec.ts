@@ -10,7 +10,7 @@ import { MessageService } from 'src/message/message.service';
 import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { DeleteRoomInput } from '../dtos/delete-room.dto';
-import { Language, User } from 'src/user/entites/user.entity';
+import { Language, Platform, User } from 'src/user/entites/user.entity';
 import { MessageType } from 'src/message/entites/message.entity';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from '../room.constants';
 import { RoomDetailInput } from '../dtos/room-detail.dto';
@@ -235,7 +235,7 @@ describe('RoomService 테스트', () => {
     const targetUser: User = {
       id: 'target',
       socialId: 'target',
-      socialPlatform: 'target',
+      socialPlatform: Platform.NAVER,
       fcmToken: 'token',
       nickname: 'target',
       allowMessage: true,

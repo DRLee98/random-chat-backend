@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, In, Not, Repository } from 'typeorm';
-import { User } from './entites/user.entity';
+import { Platform, User } from './entites/user.entity';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
 import { MeOutput } from './dtos/me.dto';
@@ -256,7 +256,7 @@ export class UserService {
 
   async findUserBySocialId(
     socialId: string,
-    socialPlatform: string,
+    socialPlatform: Platform,
     options?: Omit<FindOneOptions<User>, 'where'>,
   ): Promise<User | null> {
     const user = await this.userRepository.findOne({
@@ -300,7 +300,7 @@ export class UserService {
     const user = await this.userRepository.find({
       ...options,
       where: {
-        id: Not(In(filterIds)),
+        ...(filterIds && { id: Not(In(filterIds)) }),
         rooms: {
           room: {
             id,

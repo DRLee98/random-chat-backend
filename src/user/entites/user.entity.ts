@@ -25,7 +25,14 @@ export enum Language {
   fr = 'fr', // 프랑스어
 }
 
+export enum Platform {
+  NAVER = 'NAVER',
+  KAKAO = 'KAKAO',
+  APPLE = 'APPLE',
+}
+
 registerEnumType(Language, { name: 'Language' });
+registerEnumType(Platform, { name: 'Platform' });
 
 @InputType('UserInputType', { isAbstract: true })
 @ObjectType('UserObjectType', { isAbstract: true })
@@ -35,9 +42,9 @@ export class User extends CoreEntity {
   @Column({ unique: true })
   socialId: string;
 
-  @Field(() => String)
-  @Column()
-  socialPlatform: string;
+  @Field(() => Platform)
+  @Column({ type: 'enum', enum: Platform })
+  socialPlatform: Platform;
 
   @Field(() => String, { nullable: true })
   @Column({ nullable: true })

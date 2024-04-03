@@ -1,10 +1,10 @@
 import { Upload } from 'graphql-upload';
-import { Language, User } from 'src/user/entites/user.entity';
+import { Language, Platform, User } from 'src/user/entites/user.entity';
 
 export const mockUser: User = {
   id: 'xx',
   socialId: 'xxxx',
-  socialPlatform: 'test',
+  socialPlatform: Platform.NAVER,
   fcmToken: 'token',
   nickname: 'test',
   allowMessage: true,
