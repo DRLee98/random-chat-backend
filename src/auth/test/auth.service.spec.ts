@@ -5,7 +5,7 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginInput } from '../dtos/login.dto';
 import { MockService } from 'test/utils';
-import { Platform } from 'src/user/entites/user.entity';
+import { SocialPlatform } from 'src/user/entites/user.entity';
 
 const token = 'Bearer token';
 
@@ -57,7 +57,7 @@ describe('AuthService 테스트', () => {
   describe('로그인 테스트', () => {
     const input: LoginInput = {
       socialId: 'test',
-      socialPlatform: Platform.NAVER,
+      socialPlatform: SocialPlatform.NAVER,
     };
 
     it('존재하는 유저 테스트', async () => {
