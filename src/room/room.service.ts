@@ -281,15 +281,19 @@ export class RoomService {
 
       if (!userRoom) return this.commonService.error('존재하지 않는 방입니다.');
 
-      const users = await this.userService.findUserByRoomId(input.roomId, {
-        select: {
-          id: true,
-          nickname: true,
-          profileUrl: true,
-          bio: true,
-          language: true,
+      const users = await this.userService.findUserByRoomId(
+        input.roomId,
+        {
+          select: {
+            id: true,
+            nickname: true,
+            profileUrl: true,
+            bio: true,
+            language: true,
+          },
         },
-      });
+        [user.id],
+      );
 
       return {
         ok: true,
@@ -419,7 +423,7 @@ export class RoomService {
     userRooms.forEach(async (item) => {
       const newMessageCount = item.newMessage + 1;
 
-      await this.userRoomRepository.update(item.id, {
+      this.userRoomRepository.update(item.id, {
         newMessage: newMessageCount,
       });
       this.pubSub.publish(UPDATE_NEW_MESSAGE, {
@@ -428,6 +432,7 @@ export class RoomService {
           newMessage: newMessageCount,
           lastMessage: message,
           userId: item.user.id,
+          roomId: item.room.id,
         },
       });
     });

@@ -611,11 +611,13 @@ describe('RoomService 테스트', () => {
           id: '1',
           newMessage: 1,
           user: { id: 'x1' },
+          room: { id: 'test' },
         },
         {
           id: '2',
           newMessage: 1,
           user: { id: 'x2' },
+          room: { id: 'test' },
         },
       ];
       userRoomRepository.find.mockResolvedValue(targetRooms);
@@ -642,6 +644,7 @@ describe('RoomService 테스트', () => {
               id: room.id,
               newMessage: room.newMessage + 1,
               lastMessage: 'msg',
+              roomId: 'test',
               userId: room.user.id,
             },
           },
