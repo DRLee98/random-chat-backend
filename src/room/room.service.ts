@@ -15,7 +15,6 @@ import { PubSub } from 'graphql-subscriptions';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
 import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
 import { DeleteRoomInput, DeleteRoomOutput } from './dtos/delete-room.dto';
-import { MessageType } from 'src/message/entites/message.entity';
 
 @Injectable()
 export class RoomService {
@@ -64,9 +63,9 @@ export class RoomService {
       const mapRooms: MyRoomsOutput['rooms'] = (
         await Promise.all(
           rooms.map(async ({ room, ...item }) => {
-            const lastMessage = await this.messageService.findLastMessage(
-              room.id,
-            );
+            const lastMessage =
+              (await this.messageService.findLastMessage(room.id))?.contents ??
+              '';
             const users = await this.userService.findUserByRoomId(
               room.id,
               {
@@ -350,19 +349,16 @@ export class RoomService {
       if (!myUserRoom)
         return this.commonService.error('참여중인 방이 아닙니다.');
 
-      await this.userRoomRepository.softDelete(myUserRoom.id);
-      await this.messageService.sendMessage(
-        {
-          roomId: input.roomId,
-          contents: `${user.nickname}님이 채팅방을 나갔습니다.`,
-          type: MessageType.SYSTEM,
-        },
+      this.userRoomRepository.softDelete(myUserRoom.id);
+      this.messageService.createSystemMessage(
+        input.roomId,
+        `${user.nickname}님이 채팅방을 나갔습니다.`,
         user,
       );
 
       if (unDeletedUserRooms.length === 0) {
-        await this.roomRepository.softDelete(input.roomId);
-        await this.messageService.deleteMessages(input.roomId);
+        this.roomRepository.softDelete(input.roomId);
+        this.messageService.deleteMessages(input.roomId);
       }
 
       return {

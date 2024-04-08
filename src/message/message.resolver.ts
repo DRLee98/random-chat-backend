@@ -12,7 +12,7 @@ import { Inject } from '@nestjs/common';
 import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { NEW_MESSAGE, READ_MESSAGE } from './message.constants';
-import { Message } from './entites/message.entity';
+import { Message, MessageType } from './entites/message.entity';
 import { NewMessageInput } from './dtos/new-message.dto';
 
 @Resolver()
@@ -41,15 +41,18 @@ export class MessageResolver {
   @Subscription(() => Message, {
     filter: (payload, variables, context) => {
       return (
-        payload.newMessage.room.id === variables.input.roomId &&
-        payload.newMessage.user.id !== context.user.id
+        payload.newMessage.type === MessageType.SYSTEM ||
+        (payload.newMessage.room.id === variables.input.roomId &&
+          payload.newMessage.user.id !== context.user.id)
       );
     },
     resolve(payload, variables) {
-      this.messageService.readMessage(
-        variables.input.roomId,
-        payload.newMessage.user.id,
-      );
+      if (payload.newMessage.type !== MessageType.SYSTEM) {
+        this.messageService.readMessage(
+          variables.input.roomId,
+          payload.newMessage.user.id,
+        );
+      }
       return payload.newMessage;
     },
   })

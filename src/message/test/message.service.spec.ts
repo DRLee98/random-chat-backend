@@ -147,7 +147,7 @@ describe('MessageService 테스트', () => {
       expect(pubSub.publish).toHaveBeenCalledTimes(0);
     });
 
-    it('메시지 전송', async () => {
+    it('메시지 전송 (마지막 메시지가 당일인 경우)', async () => {
       const message = {
         id: 'test message',
         contents: input.contents,
@@ -159,6 +159,7 @@ describe('MessageService 테스트', () => {
 
       roomService.checkValidRoom.mockResolvedValue(true);
       messageRepository.create.mockReturnValue(message);
+      messageRepository.findOne.mockReturnValue({ createdAt: new Date() });
 
       const result = await messageService.sendMessage(input, mockUser);
 
@@ -171,6 +172,8 @@ describe('MessageService 테스트', () => {
         input.roomId,
         mockUser.id,
       );
+
+      expect(messageRepository.findOne).toHaveBeenCalledTimes(1);
 
       expect(roomService.updateNewMesssageInUserRoom).toHaveBeenCalledTimes(1);
       expect(roomService.updateNewMesssageInUserRoom).toHaveBeenCalledWith(
@@ -191,6 +194,69 @@ describe('MessageService 테스트', () => {
 
       expect(pubSub.publish).toHaveBeenCalledTimes(1);
       expect(pubSub.publish).toHaveBeenCalledWith(NEW_MESSAGE, {
+        newMessage: message,
+      });
+    });
+
+    it('메시지 전송 (마지막 메시지가 당일이 아닌 경우)', async () => {
+      const lastMessage = {
+        id: 'test message',
+        contents: input.contents,
+        type: input.type,
+        user: mockUser,
+        room: { id: input.roomId },
+        readUsersId: [mockUser.id],
+        createdAt: new Date(2000, 1, 1),
+      };
+
+      const message = {
+        id: 'test message',
+        contents: input.contents,
+        type: input.type,
+        user: mockUser,
+        room: { id: input.roomId },
+        readUsersId: [mockUser.id],
+      };
+
+      roomService.checkValidRoom.mockResolvedValue(true);
+      messageRepository.create.mockReturnValue(message);
+      messageRepository.findOne.mockReturnValue(lastMessage);
+
+      const result = await messageService.sendMessage(input, mockUser);
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+      expect(result.message).toEqual(message);
+
+      expect(roomService.checkValidRoom).toHaveBeenCalledTimes(1);
+      expect(roomService.checkValidRoom).toHaveBeenCalledWith(
+        input.roomId,
+        mockUser.id,
+      );
+
+      expect(messageRepository.findOne).toHaveBeenCalledTimes(1);
+
+      expect(roomService.updateNewMesssageInUserRoom).toHaveBeenCalledTimes(1);
+      expect(roomService.updateNewMesssageInUserRoom).toHaveBeenCalledWith(
+        input.roomId,
+        mockUser.id,
+        input.contents,
+      );
+
+      expect(roomService.updateRoomUpdateAt).toHaveBeenCalledTimes(1);
+      expect(roomService.updateRoomUpdateAt).toHaveBeenCalledWith(input.roomId);
+
+      const { id: _, ...createMessageData } = message;
+      expect(messageRepository.create).toHaveBeenCalledTimes(2);
+      expect(messageRepository.create).toHaveBeenLastCalledWith(
+        createMessageData,
+      );
+
+      expect(messageRepository.save).toHaveBeenCalledTimes(2);
+      expect(messageRepository.save).toHaveBeenLastCalledWith(message);
+
+      expect(pubSub.publish).toHaveBeenCalledTimes(2);
+      expect(pubSub.publish).toHaveBeenLastCalledWith(NEW_MESSAGE, {
         newMessage: message,
       });
     });

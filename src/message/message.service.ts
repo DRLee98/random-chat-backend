@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Message } from './entites/message.entity';
+import { Message, MessageType } from './entites/message.entity';
 import { ArrayContains, Not, Repository } from 'typeorm';
 import {
   ViewMessagesInput,
@@ -13,6 +13,7 @@ import { CommonService } from 'src/common/common.service';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/common/common.constants';
 import { NEW_MESSAGE, READ_MESSAGE } from './message.constants';
+import { getDayStr } from 'src/user/utils';
 
 @Injectable()
 export class MessageService {
@@ -35,7 +36,7 @@ export class MessageService {
         updatedAt: 'DESC',
       },
     });
-    return lastMessage?.contents ?? '';
+    return lastMessage;
   }
 
   async viewMessages(
@@ -111,6 +112,14 @@ export class MessageService {
           '참여중인 방에만 메시지를 보낼 수 있습니다.',
         );
 
+      const lastMessageCreatedAt = (
+        await this.findLastMessage(input.roomId)
+      ).createdAt.toDateString();
+      const currentMessageCreatedAt = new Date().toDateString();
+      if (lastMessageCreatedAt !== currentMessageCreatedAt) {
+        await this.createDateSystemMessage(input.roomId, user);
+      }
+
       const message = this.messageRepository.create({
         contents: input.contents,
         type: input.type,
@@ -154,6 +163,7 @@ export class MessageService {
           id: roomId,
         },
         readUsersId: Not(ArrayContains([userId])),
+        type: Not(MessageType.SYSTEM),
       },
     });
 
@@ -195,5 +205,31 @@ export class MessageService {
     } catch (error) {
       return this.commonService.error(error);
     }
+  }
+
+  async createSystemMessage(roomId: string, contents: string, user: User) {
+    const message = this.messageRepository.create({
+      contents,
+      type: MessageType.SYSTEM,
+      user,
+      room: {
+        id: roomId,
+      },
+      readUsersId: [],
+    });
+
+    await this.messageRepository.save(message);
+
+    await this.pubSub.publish(NEW_MESSAGE, {
+      newMessage: message,
+    });
+  }
+
+  async createDateSystemMessage(roomId: string, user: User) {
+    const newDate = new Date();
+    const contents = `${newDate.getFullYear()}년 ${
+      newDate.getMonth() + 1
+    }월 ${newDate.getDate()}일 ${getDayStr(newDate.getDay())}`;
+    await this.createSystemMessage(roomId, contents, user);
   }
 }

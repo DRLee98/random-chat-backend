@@ -11,7 +11,6 @@ import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { DeleteRoomInput } from '../dtos/delete-room.dto';
 import { Language, SocialPlatform, User } from 'src/user/entites/user.entity';
-import { MessageType } from 'src/message/entites/message.entity';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from '../room.constants';
 import { RoomDetailInput } from '../dtos/room-detail.dto';
 import { MyRoomsInput } from '../dtos/my-rooms.dto';
@@ -28,6 +27,7 @@ const mockMessageService = () => ({
   findLastMessage: jest.fn(),
   sendMessage: jest.fn(),
   deleteMessages: jest.fn(),
+  createSystemMessage: jest.fn(),
 });
 
 const mockPubSub = () => ({
@@ -177,7 +177,9 @@ describe('RoomService 테스트', () => {
       }));
 
       userRoomRepository.find.mockResolvedValue(rooms);
-      messageService.findLastMessage.mockResolvedValue('last message');
+      messageService.findLastMessage.mockResolvedValue({
+        contents: 'last message',
+      });
       userService.findUserByRoomId.mockResolvedValue([mockUser]);
 
       const result = await roomService.myRooms(input, mockUser);
@@ -547,13 +549,10 @@ describe('RoomService 테스트', () => {
 
       expect(userRoomRepository.softDelete).toHaveBeenCalledTimes(1);
       expect(userRoomRepository.softDelete).toHaveBeenCalledWith('2');
-      expect(messageService.sendMessage).toHaveBeenCalledTimes(1);
-      expect(messageService.sendMessage).toHaveBeenCalledWith(
-        {
-          roomId: input.roomId,
-          contents: `${mockUser.nickname}님이 채팅방을 나갔습니다.`,
-          type: MessageType.SYSTEM,
-        },
+      expect(messageService.createSystemMessage).toHaveBeenCalledTimes(1);
+      expect(messageService.createSystemMessage).toHaveBeenCalledWith(
+        input.roomId,
+        `${mockUser.nickname}님이 채팅방을 나갔습니다.`,
         mockUser,
       );
 
@@ -577,13 +576,10 @@ describe('RoomService 테스트', () => {
 
       expect(userRoomRepository.softDelete).toHaveBeenCalledTimes(1);
       expect(userRoomRepository.softDelete).toHaveBeenCalledWith('2');
-      expect(messageService.sendMessage).toHaveBeenCalledTimes(1);
-      expect(messageService.sendMessage).toHaveBeenCalledWith(
-        {
-          roomId: input.roomId,
-          contents: `${mockUser.nickname}님이 채팅방을 나갔습니다.`,
-          type: MessageType.SYSTEM,
-        },
+      expect(messageService.createSystemMessage).toHaveBeenCalledTimes(1);
+      expect(messageService.createSystemMessage).toHaveBeenCalledWith(
+        input.roomId,
+        `${mockUser.nickname}님이 채팅방을 나갔습니다.`,
         mockUser,
       );
 
