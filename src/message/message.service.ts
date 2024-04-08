@@ -13,7 +13,7 @@ import { CommonService } from 'src/common/common.service';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/common/common.constants';
 import { NEW_MESSAGE, READ_MESSAGE } from './message.constants';
-import { getDayStr } from 'src/user/utils';
+import { getDayStr } from './utils';
 
 @Injectable()
 export class MessageService {
