@@ -45,8 +45,11 @@ export class MessageResolver {
         payload.newMessage.user.id !== context.user.id
       );
     },
-    resolve(payload, variables, context) {
-      this.messageService.readMessage(variables.input.roomId, context.user.id);
+    resolve(payload, variables) {
+      this.messageService.readMessage(
+        variables.input.roomId,
+        payload.newMessage.user.id,
+      );
       return payload.newMessage;
     },
   })

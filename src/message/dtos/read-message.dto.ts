@@ -1,4 +1,4 @@
-import { Field, ID, InputType, ObjectType, PickType } from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 import { Message } from '../entites/message.entity';
 
 @InputType()
@@ -8,13 +8,6 @@ export class ReadMessageInput {
 }
 
 @ObjectType()
-export class Messages extends PickType(
-  Message,
-  ['id', 'readUsersId'],
-  ObjectType,
-) {}
-
-@ObjectType()
 export class ReadMessage {
   @Field(() => ID)
   roomId: string;
@@ -22,6 +15,6 @@ export class ReadMessage {
   @Field(() => ID)
   userId: string;
 
-  @Field(() => [Messages])
-  messages: Messages[];
+  @Field(() => [Message])
+  messages: Message[];
 }

@@ -122,17 +122,17 @@ export class MessageService {
       });
 
       await this.messageRepository.save(message);
-      await this.roomService.updateNewMesssageInUserRoom(
+
+      this.pubSub.publish(NEW_MESSAGE, {
+        newMessage: message,
+      });
+
+      this.roomService.updateRoomUpdateAt(input.roomId);
+      this.roomService.updateNewMesssageInUserRoom(
         input.roomId,
         user.id,
         input.contents,
       );
-
-      await this.pubSub.publish(NEW_MESSAGE, {
-        newMessage: message,
-      });
-
-      await this.roomService.updateRoomUpdateAt(input.roomId);
 
       return {
         ok: true,
@@ -145,6 +145,10 @@ export class MessageService {
 
   async readMessage(roomId: string, userId: string) {
     const messages = await this.messageRepository.find({
+      select: {
+        id: true,
+        readUsersId: true,
+      },
       where: {
         room: {
           id: roomId,
