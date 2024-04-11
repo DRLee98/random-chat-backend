@@ -16,9 +16,9 @@ export class UserRoom extends CoreEntity {
   @ManyToOne(() => Room, (room) => room.userRooms)
   room: Room;
 
-  @Field(() => String)
-  @Column()
-  name: string;
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
+  name?: string;
 
   @Field(() => Boolean)
   @Column({ default: true })
@@ -26,7 +26,7 @@ export class UserRoom extends CoreEntity {
 
   @Field(() => Date, { nullable: true })
   @Column({ default: null })
-  pinnedAt: Date;
+  pinnedAt?: Date;
 
   @Field(() => Number)
   @Column({ default: 0 })

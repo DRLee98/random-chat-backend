@@ -18,7 +18,7 @@ export class MyRoomsInput extends PaginationInput {}
 @ObjectType()
 export class SimpleUser extends PickType(
   User,
-  ['id', 'profileUrl'],
+  ['id', 'nickname', 'profileUrl'],
   ObjectType,
 ) {}
 

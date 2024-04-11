@@ -313,11 +313,9 @@ describe('RoomService 테스트', () => {
       expect(userRoomRepository.create).toHaveBeenCalledTimes(2);
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(1, {
         user: mockUser,
-        name: targetUser.nickname,
       });
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(2, {
         user: targetUser,
-        name: mockUser.nickname,
       });
 
       expect(userRoomRepository.save).toHaveBeenCalledTimes(2);
@@ -387,11 +385,9 @@ describe('RoomService 테스트', () => {
       expect(userRoomRepository.create).toHaveBeenCalledTimes(2);
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(1, {
         user: mockUser,
-        name: targetUser.nickname,
       });
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(2, {
         user: targetUser,
-        name: mockUser.nickname,
       });
 
       expect(userRoomRepository.save).toHaveBeenCalledTimes(2);

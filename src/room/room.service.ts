@@ -71,6 +71,7 @@ export class RoomService {
               {
                 select: {
                   id: true,
+                  nickname: true,
                   profileUrl: true,
                 },
               },
@@ -192,12 +193,10 @@ export class RoomService {
 
       const myRoom = this.userRoomRepository.create({
         user,
-        name: targetUser.nickname,
       });
 
       const targetUserRoom = this.userRoomRepository.create({
         user: targetUser,
-        name: user.nickname,
       });
 
       await this.userRoomRepository.save(myRoom);
