@@ -213,7 +213,7 @@ export class RoomService {
           ...targetUserRoom,
           room,
           lastMessage: '',
-          users: [targetUser, user],
+          users: [user],
         },
       });
 
@@ -223,7 +223,7 @@ export class RoomService {
           ...myRoom,
           room,
           lastMessage: '',
-          users: [targetUser, user],
+          users: [targetUser],
         },
       };
     } catch (error) {

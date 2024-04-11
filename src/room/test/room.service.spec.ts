@@ -336,7 +336,7 @@ describe('RoomService 테스트', () => {
           ...targetRoom,
           room,
           lastMessage: '',
-          users: [targetUser, mockUser],
+          users: [mockUser],
         },
       });
     });
@@ -408,7 +408,7 @@ describe('RoomService 테스트', () => {
           ...targetRoom,
           room,
           lastMessage: '',
-          users: [targetUser, mockUser],
+          users: [mockUser],
         },
       });
     });
