@@ -240,6 +240,7 @@ describe('RoomService 테스트', () => {
       socialPlatform: SocialPlatform.NAVER,
       fcmToken: 'token',
       nickname: 'target',
+      noti: true,
       allowMessage: true,
       language: Language.ko,
       autoTranslation: false,

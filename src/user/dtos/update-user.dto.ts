@@ -16,6 +16,7 @@ export class UpdateUserInput extends PartialType(
     'fcmToken',
     'nickname',
     'bio',
+    'noti',
     'allowMessage',
     'language',
     'autoTranslation',

@@ -7,6 +7,7 @@ export const mockUser: User = {
   socialPlatform: SocialPlatform.NAVER,
   fcmToken: 'token',
   nickname: 'test',
+  noti: true,
   allowMessage: true,
   language: Language.ko,
   autoTranslation: false,

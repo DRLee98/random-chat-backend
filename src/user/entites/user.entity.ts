@@ -64,6 +64,10 @@ export class User extends CoreEntity {
 
   @Field(() => Boolean)
   @Column({ default: true })
+  noti: boolean;
+
+  @Field(() => Boolean)
+  @Column({ default: true })
   allowMessage: boolean;
 
   @Field(() => [User])
