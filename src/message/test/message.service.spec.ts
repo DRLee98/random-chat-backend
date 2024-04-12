@@ -255,8 +255,8 @@ describe('MessageService 테스트', () => {
       expect(messageRepository.save).toHaveBeenCalledTimes(2);
       expect(messageRepository.save).toHaveBeenLastCalledWith(message);
 
-      expect(pubSub.publish).toHaveBeenCalledTimes(2);
-      expect(pubSub.publish).toHaveBeenLastCalledWith(NEW_MESSAGE, {
+      expect(pubSub.publish).toHaveBeenCalledTimes(1);
+      expect(pubSub.publish).toHaveBeenCalledWith(NEW_MESSAGE, {
         newMessage: message,
       });
     });

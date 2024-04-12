@@ -207,7 +207,12 @@ export class MessageService {
     }
   }
 
-  async createSystemMessage(roomId: string, contents: string, user: User) {
+  async createSystemMessage(
+    roomId: string,
+    contents: string,
+    user: User,
+    publish: boolean = true,
+  ) {
     const message = this.messageRepository.create({
       contents,
       type: MessageType.SYSTEM,
@@ -220,9 +225,11 @@ export class MessageService {
 
     await this.messageRepository.save(message);
 
-    await this.pubSub.publish(NEW_MESSAGE, {
-      newMessage: message,
-    });
+    if (publish) {
+      await this.pubSub.publish(NEW_MESSAGE, {
+        newMessage: message,
+      });
+    }
   }
 
   async createDateSystemMessage(roomId: string, user: User) {
@@ -230,6 +237,6 @@ export class MessageService {
     const contents = `${newDate.getFullYear()}년 ${
       newDate.getMonth() + 1
     }월 ${newDate.getDate()}일 ${getDayStr(newDate.getDay())}`;
-    await this.createSystemMessage(roomId, contents, user);
+    await this.createSystemMessage(roomId, contents, user, false);
   }
 }
