@@ -112,11 +112,11 @@ export class MessageService {
           '참여중인 방에만 메시지를 보낼 수 있습니다.',
         );
 
-      const lastMessageCreatedAt = (
-        await this.findLastMessage(input.roomId)
-      ).createdAt.toDateString();
-      const currentMessageCreatedAt = new Date().toDateString();
-      if (lastMessageCreatedAt !== currentMessageCreatedAt) {
+      const lastMessage = await this.findLastMessage(input.roomId);
+      if (
+        !lastMessage ||
+        lastMessage.createdAt.toDateString() !== new Date().toDateString()
+      ) {
         await this.createDateSystemMessage(input.roomId, user);
       }
 
