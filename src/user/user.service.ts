@@ -129,6 +129,7 @@ export class UserService {
           blockUsers: {
             id: true,
             nickname: true,
+            bio: true,
             profileUrl: true,
           },
         },
@@ -204,6 +205,7 @@ export class UserService {
           blockUsers: {
             id: true,
             nickname: true,
+            bio: true,
             profileUrl: true,
           },
         },
