@@ -16,6 +16,7 @@ import { User } from './user/entites/user.entity';
 import { Room } from './room/entites/room.entity';
 import { UserRoom } from './room/entites/user-room.entity';
 import { Message } from './message/entites/message.entity';
+import { NoticeModule } from './notice/notice.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { Message } from './message/entites/message.entity';
     RoomModule,
     MessageModule,
     CommonModule,
+    NoticeModule,
   ],
   controllers: [],
   providers: [],
