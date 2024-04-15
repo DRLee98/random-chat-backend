@@ -1,6 +1,9 @@
 import { Query, Args, Resolver } from '@nestjs/graphql';
+
 import { AuthService } from './auth.service';
+
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+
 import { Public } from './auth.decorator';
 
 @Resolver()

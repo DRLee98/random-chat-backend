@@ -1,17 +1,21 @@
+import { Inject } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
-import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
-import { LoggedInUser } from 'src/user/user.decorator';
-import { User } from 'src/user/entites/user.entity';
+
 import { RoomService } from './room.service';
+
+import { User } from 'src/user/entites/user.entity';
+import { LoggedInUser } from 'src/user/user.decorator';
+
+import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
 import { MyRoom, MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
-import { PubSub } from 'graphql-subscriptions';
-import { PUB_SUB } from 'src/common/common.constants';
-import { Inject } from '@nestjs/common';
 import { UpdateNewMessageInUserRoom } from './dtos/update-new-message.dto';
-import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
 import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
 import { DeleteRoomInput, DeleteRoomOutput } from './dtos/delete-room.dto';
+
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/common/common.constants';
+import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
 
 @Resolver()
 export class RoomResolver {

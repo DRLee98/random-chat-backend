@@ -1,20 +1,25 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Room } from './entites/room.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { User } from 'src/user/entites/user.entity';
+
+import { UserService } from 'src/user/user.service';
+import { MessageService } from 'src/message/message.service';
+import { FcmService } from 'src/fcm/fcm.service';
+import { CommonService } from 'src/common/common.service';
+
+import { Room } from './entites/room.entity';
 import { UserRoom } from './entites/user-room.entity';
+import { User } from 'src/user/entites/user.entity';
+
 import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
 import { MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
-import { UserService } from 'src/user/user.service';
-import { MessageService } from 'src/message/message.service';
-import { CommonService } from 'src/common/common.service';
+import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
+import { DeleteRoomInput, DeleteRoomOutput } from './dtos/delete-room.dto';
+
 import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from './room.constants';
-import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
-import { DeleteRoomInput, DeleteRoomOutput } from './dtos/delete-room.dto';
 
 @Injectable()
 export class RoomService {
@@ -27,6 +32,7 @@ export class RoomService {
     private readonly userService: UserService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
+    private readonly fcmService: FcmService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -216,6 +222,14 @@ export class RoomService {
           users: [user],
         },
       });
+
+      if (targetUser.fcmToken && targetUser.noti) {
+        this.fcmService.pushMessage({
+          token: targetUser.fcmToken,
+          title: '새로운 채팅이 생성되었습니다.',
+          message: `${user.nickname}님과 채팅을 시작해보세요!`,
+        });
+      }
 
       return {
         ok: true,
@@ -456,5 +470,21 @@ export class RoomService {
     await this.roomRepository.update(roomId, {
       updatedAt: new Date(),
     });
+  }
+
+  async notiAllowRoom(roomId: string, userId: string) {
+    const userRoom = await this.userRoomRepository.findOne({
+      where: {
+        room: {
+          id: roomId,
+        },
+        user: {
+          id: userId,
+        },
+        noti: true,
+      },
+    });
+
+    return Boolean(userRoom);
   }
 }

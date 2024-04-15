@@ -1,15 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Message, MessageType } from './entites/message.entity';
 import { ArrayContains, Not, Repository } from 'typeorm';
+
+import { UserService } from 'src/user/user.service';
+import { RoomService } from 'src/room/room.service';
+import { FcmService } from 'src/fcm/fcm.service';
+import { CommonService } from 'src/common/common.service';
+
+import { Message, MessageType } from './entites/message.entity';
+import { User } from 'src/user/entites/user.entity';
+
 import {
   ViewMessagesInput,
   ViewMessagesOutput,
 } from './dtos/view-messages.dto';
-import { User } from 'src/user/entites/user.entity';
-import { RoomService } from 'src/room/room.service';
 import { SendMessageInput, SendMessageOutput } from './dtos/send-message.dto';
-import { CommonService } from 'src/common/common.service';
+
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/common/common.constants';
 import { NEW_MESSAGE, READ_MESSAGE } from './message.constants';
@@ -20,8 +26,10 @@ export class MessageService {
   constructor(
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
-    private readonly commonService: CommonService,
+    private readonly userService: UserService,
     private readonly roomService: RoomService,
+    private readonly fcmService: FcmService,
+    private readonly commonService: CommonService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -135,6 +143,8 @@ export class MessageService {
       this.pubSub.publish(NEW_MESSAGE, {
         newMessage: message,
       });
+      this.readMessage(input.roomId, user.id);
+      this.fcmPushMessage(input.roomId, user.id, input.contents);
 
       this.roomService.updateRoomUpdateAt(input.roomId);
       this.roomService.updateNewMesssageInUserRoom(
@@ -238,5 +248,30 @@ export class MessageService {
       newDate.getMonth() + 1
     }월 ${newDate.getDate()}일 ${getDayStr(newDate.getDay())}`;
     await this.createSystemMessage(roomId, contents, user, false);
+  }
+
+  async fcmPushMessage(roomId: string, userId: string, message: string) {
+    const allowed = await this.roomService.notiAllowRoom(roomId, userId);
+    if (!allowed) return;
+
+    const users = await this.userService.findUserByRoomId(
+      roomId,
+      {
+        select: {
+          fcmToken: true,
+          noti: true,
+        },
+      },
+      [userId],
+    );
+    users.forEach(({ fcmToken, noti }) => {
+      if (fcmToken && noti) {
+        this.fcmService.pushMessage({
+          token: fcmToken,
+          title: '새로운 메시지가 도착했습니다.',
+          message,
+        });
+      }
+    });
   }
 }

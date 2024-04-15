@@ -1,19 +1,23 @@
+import { Inject } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+
+import { MessageService } from './message.service';
+
+import { Message, MessageType } from './entites/message.entity';
+import { User } from 'src/user/entites/user.entity';
+import { LoggedInUser } from 'src/user/user.decorator';
+
 import {
   ViewMessagesInput,
   ViewMessagesOutput,
 } from './dtos/view-messages.dto';
-import { MessageService } from './message.service';
-import { LoggedInUser } from 'src/user/user.decorator';
-import { User } from 'src/user/entites/user.entity';
 import { SendMessageInput, SendMessageOutput } from './dtos/send-message.dto';
 import { ReadMessage, ReadMessageInput } from './dtos/read-message.dto';
-import { Inject } from '@nestjs/common';
+import { NewMessageInput } from './dtos/new-message.dto';
+
 import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { NEW_MESSAGE, READ_MESSAGE } from './message.constants';
-import { Message, MessageType } from './entites/message.entity';
-import { NewMessageInput } from './dtos/new-message.dto';
 
 @Resolver()
 export class MessageResolver {
@@ -46,11 +50,11 @@ export class MessageResolver {
           payload.newMessage.user.id !== context.user.id)
       );
     },
-    resolve(payload, variables) {
+    resolve(payload, variables, context) {
       if (payload.newMessage.type !== MessageType.SYSTEM) {
         this.messageService.readMessage(
           variables.input.roomId,
-          payload.newMessage.user.id,
+          context.user.id,
         );
       }
       return payload.newMessage;

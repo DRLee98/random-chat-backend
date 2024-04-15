@@ -1,18 +1,21 @@
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { User } from './user/entites/user.entity';
+
+import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { MessageModule } from './message/message.module';
 import { RoomModule } from './room/room.module';
+import { CommonModule } from './common/common.module';
+import { AwsModule } from './aws/aws.module';
+import { FcmModule } from './fcm/fcm.module';
+
+import { User } from './user/entites/user.entity';
 import { Room } from './room/entites/room.entity';
 import { UserRoom } from './room/entites/user-room.entity';
 import { Message } from './message/entites/message.entity';
-import { CommonModule } from './common/common.module';
-import { AwsModule } from './aws/aws.module';
 
 @Module({
   imports: [
@@ -42,6 +45,7 @@ import { AwsModule } from './aws/aws.module';
       },
     }),
     AwsModule,
+    FcmModule,
     UserModule,
     AuthModule,
     RoomModule,

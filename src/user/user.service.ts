@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, In, Not, Repository } from 'typeorm';
+
+import { AwsService } from 'src/aws/aws.service';
+import { CommonService } from 'src/common/common.service';
+
 import { SocialPlatform, User } from './entites/user.entity';
+
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
 import { MeOutput } from './dtos/me.dto';
@@ -11,10 +16,9 @@ import {
   ToggleBlockUserInput,
   ToggleBlockUserOutput,
 } from './dtos/toggle-block-user.dto';
-import { CommonService } from 'src/common/common.service';
 import { RandomNicknameOutput } from './dtos/random-nickname.dto';
-import { AwsService } from 'src/aws/aws.service';
 import { MeDetailOutput } from './dtos/me-detail.dto';
+
 import { getProfilePath, randomNameGenerator } from './utils';
 
 @Injectable()

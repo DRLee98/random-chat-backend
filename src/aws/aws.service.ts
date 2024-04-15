@@ -1,11 +1,14 @@
-import * as AWS from 'aws-sdk';
-
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UploadFileOutput } from './dtos/upload-file.dto';
+
 import { CommonService } from 'src/common/common.service';
+
+import { UploadFileOutput } from './dtos/upload-file.dto';
+
 import { Upload } from 'graphql-upload';
 import { streamToBuffer } from './utils';
+
+import * as AWS from 'aws-sdk';
 
 @Injectable()
 export class AwsService {

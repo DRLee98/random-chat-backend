@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { Public } from './auth.decorator';
+
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
+
+import { Public } from './auth.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

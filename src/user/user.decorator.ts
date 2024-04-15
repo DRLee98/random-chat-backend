@@ -1,5 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
+
 import { User } from './entites/user.entity';
 
 export const userFactory = (data: keyof User, ctx: ExecutionContext) => {

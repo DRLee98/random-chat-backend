@@ -1,9 +1,13 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+
 import { UserService } from './user.service';
+
 import { User } from './entites/user.entity';
+import { LoggedInUser } from './user.decorator';
+import { Public } from 'src/auth/auth.decorator';
+
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';
-import { LoggedInUser } from './user.decorator';
 import { MeOutput } from './dtos/me.dto';
 import { DeleteUserOutput } from './dtos/delete-user.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
@@ -11,7 +15,6 @@ import {
   ToggleBlockUserInput,
   ToggleBlockUserOutput,
 } from './dtos/toggle-block-user.dto';
-import { Public } from 'src/auth/auth.decorator';
 import { RandomNicknameOutput } from './dtos/random-nickname.dto';
 import { MeDetailOutput } from './dtos/me-detail.dto';
 
