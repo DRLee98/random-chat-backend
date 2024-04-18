@@ -1,12 +1,15 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { Notice } from '../entities/notice.entity';
+import { Notice, NoticeCategory } from '../entities/notice.entity';
 import {
   PaginationInput,
   PaginationOutput,
 } from 'src/common/dtos/pagination.dto';
 
 @InputType()
-export class NoticeListInput extends PaginationInput {}
+export class NoticeListInput extends PaginationInput {
+  @Field(() => NoticeCategory, { nullable: true })
+  category?: NoticeCategory;
+}
 
 @ObjectType()
 export class NoticeListOutput extends PaginationOutput {

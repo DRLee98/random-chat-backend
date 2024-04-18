@@ -3,12 +3,13 @@ import { NoticeService } from '../notice.service';
 import { CommonService } from 'src/common/common.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MockRepository, mockRepository } from 'test/utils';
-import { Notice } from '../entities/notice.entity';
+import { Notice, NoticeCategory } from '../entities/notice.entity';
 
 const mockNotice: Notice = {
   id: '1',
   title: 'title',
   content: 'content',
+  category: NoticeCategory.INFO,
   pinned: false,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -86,6 +87,7 @@ describe('NoticeService 테스트', () => {
       title: mockNotice.title,
       content: mockNotice.content,
       pinned: mockNotice.pinned,
+      category: mockNotice.category,
     });
 
     expect(result.ok).toEqual(true);

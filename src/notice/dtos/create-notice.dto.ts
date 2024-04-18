@@ -7,6 +7,7 @@ export class CreateNoticeInput extends PickType(Notice, [
   'title',
   'content',
   'pinned',
+  'category',
 ]) {}
 
 @ObjectType()

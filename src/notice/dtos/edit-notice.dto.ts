@@ -11,7 +11,7 @@ import { CoreOutput } from 'src/common/dtos/output.dto';
 
 @InputType()
 export class EditNoticeInput extends PartialType(
-  PickType(Notice, ['title', 'content', 'pinned']),
+  PickType(Notice, ['title', 'content', 'pinned', 'category']),
 ) {
   @Field(() => ID)
   id: string;

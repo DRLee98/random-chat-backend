@@ -25,9 +25,15 @@ export class NoticeService {
     private readonly noticeRepository: Repository<Notice>,
     private readonly commonService: CommonService,
   ) {}
-  async noticeList(input: NoticeListInput): Promise<NoticeListOutput> {
+  async noticeList({
+    category,
+    ...input
+  }: NoticeListInput): Promise<NoticeListOutput> {
     try {
       const noticeList = await this.noticeRepository.find({
+        where: {
+          category,
+        },
         order: {
           pinned: {
             direction: 'DESC',
@@ -41,6 +47,7 @@ export class NoticeService {
       const output = await this.commonService.paginationOutput(
         input,
         this.noticeRepository,
+        { category },
       );
       return {
         noticeList,
