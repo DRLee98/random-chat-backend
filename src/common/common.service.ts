@@ -23,7 +23,7 @@ export class CommonService {
   async paginationOutput<T>(
     input: PaginationInput,
     repository: Repository<T>,
-    where: FindOptionsWhere<T>,
+    where?: FindOptionsWhere<T>,
   ): Promise<PaginationOutput> {
     const total = Math.ceil(
       await repository.count({

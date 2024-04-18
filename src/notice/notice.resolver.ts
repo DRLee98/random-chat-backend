@@ -2,7 +2,7 @@ import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 
 import { NoticeService } from './notice.service';
 
-import { NoticeListOutput } from './dtos/notice-list.dto';
+import { NoticeListInput, NoticeListOutput } from './dtos/notice-list.dto';
 import { NoticeInput, NoticeOutput } from './dtos/notice.dto';
 import {
   CreateNoticeInput,
@@ -19,8 +19,10 @@ export class NoticeResolver {
   constructor(private readonly noticeService: NoticeService) {}
 
   @Query(() => NoticeListOutput)
-  async noticeList(): Promise<NoticeListOutput> {
-    return this.noticeService.noticeList();
+  async noticeList(
+    @Args('input') input: NoticeListInput,
+  ): Promise<NoticeListOutput> {
+    return this.noticeService.noticeList(input);
   }
 
   @Query(() => NoticeOutput)

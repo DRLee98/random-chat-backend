@@ -44,7 +44,7 @@ describe('NoticeService 테스트', () => {
     const noticeList = [mockNotice];
     noticeRepository.find.mockResolvedValue(noticeList);
 
-    const result = await noticeService.noticeList();
+    const result = await noticeService.noticeList({ take: 20, skip: 0 });
 
     expect(result.ok).toEqual(true);
     expect(result.error).toEqual(undefined);

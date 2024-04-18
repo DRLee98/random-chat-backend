@@ -6,7 +6,7 @@ import { CommonService } from 'src/common/common.service';
 
 import { Notice } from './entities/notice.entity';
 
-import { NoticeListOutput } from './dtos/notice-list.dto';
+import { NoticeListInput, NoticeListOutput } from './dtos/notice-list.dto';
 import { NoticeInput, NoticeOutput } from './dtos/notice.dto';
 import {
   CreateNoticeInput,
@@ -25,21 +25,26 @@ export class NoticeService {
     private readonly noticeRepository: Repository<Notice>,
     private readonly commonService: CommonService,
   ) {}
-  async noticeList(): Promise<NoticeListOutput> {
+  async noticeList(input: NoticeListInput): Promise<NoticeListOutput> {
     try {
       const noticeList = await this.noticeRepository.find({
         order: {
-          createdAt: 'DESC',
           pinned: {
-            direction: 'ASC',
+            direction: 'DESC',
             nulls: 'LAST',
           },
+          createdAt: 'DESC',
         },
+        ...this.commonService.paginationOption(input),
       });
 
+      const output = await this.commonService.paginationOutput(
+        input,
+        this.noticeRepository,
+      );
       return {
-        ok: true,
         noticeList,
+        ...output,
       };
     } catch (error) {
       return this.commonService.error(error);

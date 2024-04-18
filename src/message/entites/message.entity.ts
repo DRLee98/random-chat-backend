@@ -5,10 +5,11 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
+import { Column, Entity, ManyToOne } from 'typeorm';
+
 import { CoreEntity } from 'src/common/entites/core.entity';
 import { Room } from 'src/room/entites/room.entity';
 import { User } from 'src/user/entites/user.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
 
 export enum MessageType {
   TEXT = 'TEXT',

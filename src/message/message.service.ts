@@ -143,7 +143,6 @@ export class MessageService {
       this.pubSub.publish(NEW_MESSAGE, {
         newMessage: message,
       });
-      this.readMessage(input.roomId, user.id);
       this.fcmPushMessage(input.roomId, user.id, input.contents);
 
       this.roomService.updateRoomUpdateAt(input.roomId);
