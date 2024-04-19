@@ -259,6 +259,7 @@ describe('RoomService 테스트', () => {
       blockUsers: [],
       rooms: [],
       messages: [],
+      notifications: [],
       createdAt: new Date(),
       updatedAt: new Date(),
       deletedAt: null,

@@ -3,5 +3,5 @@ export class PushMessageInput {
   title: string;
   message: string;
   imageUrl?: string;
-  data?: Record<string, any>;
+  data?: Record<string, string>;
 }

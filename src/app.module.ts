@@ -12,12 +12,14 @@ import { CommonModule } from './common/common.module';
 import { AwsModule } from './aws/aws.module';
 import { FcmModule } from './fcm/fcm.module';
 import { NoticeModule } from './notice/notice.module';
+import { NotificationModule } from './notification/notification.module';
 
 import { User } from './user/entities/user.entity';
 import { Room } from './room/entities/room.entity';
 import { UserRoom } from './room/entities/user-room.entity';
 import { Message } from './message/entities/message.entity';
 import { Notice } from './notice/entities/notice.entity';
+import { Notification } from './notification/entities/notification.entity';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { Notice } from './notice/entities/notice.entity';
       database: process.env.DB_NAME,
       synchronize: true,
       logging: true,
-      entities: [User, Room, UserRoom, Message, Notice],
+      entities: [User, Room, UserRoom, Message, Notice, Notification],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -48,12 +50,13 @@ import { Notice } from './notice/entities/notice.entity';
     }),
     AwsModule,
     FcmModule,
+    NoticeModule,
+    NotificationModule,
     UserModule,
     AuthModule,
     RoomModule,
     MessageModule,
     CommonModule,
-    NoticeModule,
   ],
   controllers: [],
   providers: [],

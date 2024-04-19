@@ -14,6 +14,7 @@ export const mockUser: User = {
   blockUsers: [],
   rooms: [],
   messages: [],
+  notifications: [],
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
