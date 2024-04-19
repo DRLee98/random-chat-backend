@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -28,6 +28,10 @@ import {
 } from './dtos/delete-notification.dto';
 import { DeleteReadNotificationsOutput } from './dtos/delete-read-notifications.dto';
 
+import { PUB_SUB } from 'src/common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
+import { NEW_NOTIFICATION } from './notification.constants';
+
 @Injectable()
 export class NotificationService {
   constructor(
@@ -35,6 +39,7 @@ export class NotificationService {
     private readonly notificationRepository: Repository<Notification>,
     private readonly fcmService: FcmService,
     private readonly commonService: CommonService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   viewNotifications = async (
@@ -118,6 +123,10 @@ export class NotificationService {
         });
       }
 
+      this.pubSub.publish(NEW_NOTIFICATION, {
+        newNotification: notification,
+      });
+
       return {
         ok: true,
         notification,
@@ -171,7 +180,10 @@ export class NotificationService {
         (notification) => notification.id,
       );
 
-      await this.notificationRepository.update(notificationIds, { read: true });
+      if (notificationIds.length > 0)
+        await this.notificationRepository.update(notificationIds, {
+          read: true,
+        });
 
       return {
         ok: true,
@@ -225,7 +237,8 @@ export class NotificationService {
         (notification) => notification.id,
       );
 
-      await this.notificationRepository.softDelete(notificationIds);
+      if (notificationIds.length > 0)
+        await this.notificationRepository.softDelete(notificationIds);
 
       return {
         ok: true,

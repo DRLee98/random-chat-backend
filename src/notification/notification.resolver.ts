@@ -1,7 +1,9 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Inject } from '@nestjs/common';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 
 import { NotificationService } from './notification.service';
 
+import { Notification } from './entities/notification.entity';
 import { User } from 'src/user/entities/user.entity';
 import { LoggedInUser } from 'src/user/user.decorator';
 
@@ -25,9 +27,16 @@ import {
 } from './dtos/delete-notification.dto';
 import { DeleteReadNotificationsOutput } from './dtos/delete-read-notifications.dto';
 
+import { PUB_SUB } from 'src/common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
+import { NEW_NOTIFICATION } from './notification.constants';
+
 @Resolver()
 export class NotificationResolver {
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(
+    private readonly notificationService: NotificationService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   @Query(() => ViewNotificationsOutput)
   async viewNotifications(
@@ -79,5 +88,17 @@ export class NotificationResolver {
     @LoggedInUser() user: User,
   ): Promise<DeleteReadNotificationsOutput> {
     return this.notificationService.deleteReadNotifications(user);
+  }
+
+  @Subscription(() => Notification, {
+    filter: (payload, _, context) => {
+      return payload.notification.user.id === context.user.id;
+    },
+    resolve(payload) {
+      return payload.newNotification;
+    },
+  })
+  newNotification() {
+    return this.pubSub.asyncIterator(NEW_NOTIFICATION);
   }
 }

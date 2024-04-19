@@ -9,6 +9,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { FcmService } from 'src/fcm/fcm.service';
 import { mockUser } from 'test/mockData';
 import { CommonService } from 'src/common/common.service';
+import { PUB_SUB } from 'src/common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
+import { NEW_NOTIFICATION } from '../notification.constants';
 
 const mockNotification: Notification = {
   id: '1',
@@ -26,10 +29,15 @@ const mockFcmService = () => ({
   pushMessage: jest.fn(),
 });
 
+const mockPubSub = () => ({
+  publish: jest.fn(),
+});
+
 describe('NotificationService 테스트', () => {
   let notificationService: NotificationService;
   let notificationRepository: MockRepository<Notification>;
   let fcmService: MockService<FcmService>;
+  let pubSub: MockService<PubSub>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -43,6 +51,10 @@ describe('NotificationService 테스트', () => {
           provide: FcmService,
           useValue: mockFcmService(),
         },
+        {
+          provide: PUB_SUB,
+          useValue: mockPubSub(),
+        },
         CommonService,
       ],
     }).compile();
@@ -50,12 +62,14 @@ describe('NotificationService 테스트', () => {
     notificationService = module.get(NotificationService);
     notificationRepository = module.get(getRepositoryToken(Notification));
     fcmService = module.get(FcmService);
+    pubSub = module.get(PUB_SUB);
   });
 
   it('서비스 health check ', () => {
     expect(notificationService).toBeDefined();
     expect(notificationRepository).toBeDefined();
     expect(fcmService).toBeDefined();
+    expect(pubSub).toBeDefined();
   });
 
   it('알림 목록 조회 테스트', async () => {
@@ -116,6 +130,11 @@ describe('NotificationService 테스트', () => {
       );
 
       expect(fcmService.pushMessage).toHaveBeenCalledTimes(0);
+
+      expect(pubSub.publish).toHaveBeenCalledTimes(1);
+      expect(pubSub.publish).toHaveBeenCalledWith(NEW_NOTIFICATION, {
+        newNotification: mockNotification,
+      });
     });
 
     it('알림 생성 (유저가 토큰이 있는 경우)', async () => {
@@ -157,6 +176,11 @@ describe('NotificationService 테스트', () => {
         message: input.message,
         imageUrl: input.imageUrl,
         data: input.data,
+      });
+
+      expect(pubSub.publish).toHaveBeenCalledTimes(1);
+      expect(pubSub.publish).toHaveBeenCalledWith(NEW_NOTIFICATION, {
+        newNotification: mockNotification,
       });
     });
   });
