@@ -4,12 +4,13 @@ import { In, Not, Repository } from 'typeorm';
 
 import { UserService } from 'src/user/user.service';
 import { MessageService } from 'src/message/message.service';
-import { FcmService } from 'src/fcm/fcm.service';
+import { NotificationService } from 'src/notification/notification.service';
 import { CommonService } from 'src/common/common.service';
 
 import { Room } from './entities/room.entity';
 import { UserRoom } from './entities/user-room.entity';
 import { User } from 'src/user/entities/user.entity';
+import { NotificationType } from 'src/notification/entities/notification.entity';
 
 import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
@@ -32,7 +33,7 @@ export class RoomService {
     private readonly userService: UserService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
-    private readonly fcmService: FcmService,
+    private readonly notificationService: NotificationService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -223,12 +224,18 @@ export class RoomService {
         },
       });
 
-      if (targetUser.fcmToken && targetUser.noti) {
-        this.fcmService.pushMessage({
-          token: targetUser.fcmToken,
-          title: '새로운 채팅이 생성되었습니다.',
-          message: `${user.nickname}님과 채팅을 시작해보세요!`,
-        });
+      if (targetUser.noti) {
+        this.notificationService.createNotification(
+          {
+            title: '새로운 채팅이 생성되었습니다.',
+            message: `${user.nickname}님과 채팅을 시작해보세요!`,
+            type: NotificationType.ROOM,
+            data: {
+              roomId: room.id,
+            },
+          },
+          targetUser,
+        );
       }
 
       return {

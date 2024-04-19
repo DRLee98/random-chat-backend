@@ -4,11 +4,12 @@ import { ArrayContains, Not, Repository } from 'typeorm';
 
 import { UserService } from 'src/user/user.service';
 import { RoomService } from 'src/room/room.service';
-import { FcmService } from 'src/fcm/fcm.service';
+import { NotificationService } from 'src/notification/notification.service';
 import { CommonService } from 'src/common/common.service';
 
 import { Message, MessageType } from './entities/message.entity';
 import { User } from 'src/user/entities/user.entity';
+import { NotificationType } from 'src/notification/entities/notification.entity';
 
 import {
   ViewMessagesInput,
@@ -28,7 +29,7 @@ export class MessageService {
     private readonly messageRepository: Repository<Message>,
     private readonly userService: UserService,
     private readonly roomService: RoomService,
-    private readonly fcmService: FcmService,
+    private readonly notificationService: NotificationService,
     private readonly commonService: CommonService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
@@ -263,13 +264,17 @@ export class MessageService {
       },
       [userId],
     );
-    users.forEach(({ fcmToken, noti }) => {
-      if (fcmToken && noti) {
-        this.fcmService.pushMessage({
-          token: fcmToken,
-          title: '새로운 메시지가 도착했습니다.',
-          message,
-        });
+    users.forEach((user) => {
+      if (user.noti) {
+        this.notificationService.createNotification(
+          {
+            title: '새로운 메시지가 도착했습니다.',
+            message,
+            type: NotificationType.MESSAGE,
+            data: { roomId },
+          },
+          user,
+        );
       }
     });
   }

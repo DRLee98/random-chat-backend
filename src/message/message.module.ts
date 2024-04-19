@@ -6,7 +6,7 @@ import { MessageService } from './message.service';
 
 import { UserModule } from 'src/user/user.module';
 import { RoomModule } from 'src/room/room.module';
-import { FcmModule } from 'src/fcm/fcm.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 import { Message } from './entities/message.entity';
 
@@ -15,7 +15,7 @@ import { Message } from './entities/message.entity';
     TypeOrmModule.forFeature([Message]),
     UserModule,
     RoomModule,
-    FcmModule,
+    NotificationModule,
   ],
   providers: [MessageResolver, MessageService],
   exports: [MessageService],

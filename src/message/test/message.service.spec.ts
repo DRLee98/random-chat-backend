@@ -12,7 +12,8 @@ import { SendMessageInput } from '../dtos/send-message.dto';
 import { ViewMessagesInput } from '../dtos/view-messages.dto';
 import { mockUser } from 'test/mockData';
 import { UserService } from 'src/user/user.service';
-import { FcmService } from 'src/fcm/fcm.service';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from 'src/notification/entities/notification.entity';
 
 const roomId = 'test room';
 
@@ -28,8 +29,8 @@ const mockRoomService = () => ({
   notiAllowRoom: jest.fn(),
 });
 
-const mockFcmService = () => ({
-  pushMessage: jest.fn(),
+const mockNotificationService = () => ({
+  createNotification: jest.fn(),
 });
 
 const mockPubSub = () => ({
@@ -41,7 +42,7 @@ describe('MessageService 테스트', () => {
   let messageRepository: MockRepository<Message>;
   let userService: MockService<UserService>;
   let roomService: MockService<RoomService>;
-  let fcmService: MockService<FcmService>;
+  let notificationService: MockService<NotificationService>;
   let pubSub: MockService<PubSub>;
 
   beforeEach(async () => {
@@ -61,8 +62,8 @@ describe('MessageService 테스트', () => {
           useValue: mockRoomService(),
         },
         {
-          provide: FcmService,
-          useValue: mockFcmService(),
+          provide: NotificationService,
+          useValue: mockNotificationService(),
         },
         CommonService,
         { provide: PUB_SUB, useValue: mockPubSub() },
@@ -73,7 +74,7 @@ describe('MessageService 테스트', () => {
     messageRepository = module.get(getRepositoryToken(Message));
     userService = module.get(UserService);
     roomService = module.get(RoomService);
-    fcmService = module.get(FcmService);
+    notificationService = module.get(NotificationService);
     pubSub = module.get(PUB_SUB);
   });
 
@@ -82,7 +83,7 @@ describe('MessageService 테스트', () => {
     expect(messageRepository).toBeDefined();
     expect(userService).toBeDefined();
     expect(roomService).toBeDefined();
-    expect(fcmService).toBeDefined();
+    expect(notificationService).toBeDefined();
     expect(pubSub).toBeDefined();
   });
 
@@ -343,92 +344,109 @@ describe('MessageService 테스트', () => {
     });
   });
 
-  //   describe('메시지 푸시 테스트', () => {
-  //     it('채팅방 알림을 끈 경우', async () => {
-  //       roomService.notiAllowRoom.mockResolvedValue(false);
+  describe('메시지 푸시 테스트', () => {
+    const userId = 'test';
+    const message = 'test message';
 
-  //       await messageService.fcmPushMessage(roomId, 'test', 'test message');
+    it('채팅방 알림을 끈 경우', async () => {
+      roomService.notiAllowRoom.mockResolvedValue(false);
 
-  //       expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
-  //       expect(userService.findUserByRoomId).toHaveBeenCalledTimes(0);
-  //       expect(fcmService.pushMessage).toHaveBeenCalledTimes(0);
-  //     });
+      await messageService.fcmPushMessage(roomId, userId, message);
 
-  //     it('타겟 유저가 없을 경우', async () => {
-  //       roomService.notiAllowRoom.mockResolvedValue(true);
-  //       userService.findUserByRoomId.mockResolvedValue([
-  //         { ...mockUser, fcmToken: null },
-  //       ]);
+      expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(0);
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(0);
+    });
 
-  //       await messageService.fcmPushMessage(roomId, 'test', 'test message');
+    it('타겟 유저가 없을 경우', async () => {
+      roomService.notiAllowRoom.mockResolvedValue(true);
+      userService.findUserByRoomId.mockResolvedValue([
+        { ...mockUser, noti: false },
+      ]);
 
-  //       expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
-  //       expect(fcmService.pushMessage).toHaveBeenCalledTimes(0);
-  //     });
+      await messageService.fcmPushMessage(roomId, userId, message);
 
-  //     it('타겟 유저가 있을 경우', async () => {
-  //       roomService.notiAllowRoom.mockResolvedValue(true);
-  //       userService.findUserByRoomId.mockResolvedValue([{ ...mockUser }]);
+      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(0);
+    });
 
-  //       await messageService.fcmPushMessage(roomId, 'test', 'test message');
+    it('타겟 유저가 있을 경우', async () => {
+      roomService.notiAllowRoom.mockResolvedValue(true);
+      userService.findUserByRoomId.mockResolvedValue([mockUser]);
 
-  //       expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
-  //       expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
-  //       expect(fcmService.pushMessage).toHaveBeenCalledTimes(1);
-  //       expect(fcmService.pushMessage).toHaveBeenCalledWith({
-  //         token: mockUser.fcmToken,
-  //         title: '새로운 메시지가 도착했습니다.',
-  //         message: 'test message',
-  //       });
-  //     });
+      await messageService.fcmPushMessage(roomId, userId, message);
 
-  //     it('타겟 유저가 여러명 경우', async () => {
-  //       const mockUsers = [
-  //         mockUser,
-  //         { ...mockUser, id: 'test2', fcmToken: 'test2' },
-  //       ];
-  //       roomService.notiAllowRoom.mockResolvedValue(true);
-  //       userService.findUserByRoomId.mockResolvedValue(mockUsers);
+      expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
+      expect(notificationService.createNotification).toHaveBeenCalledWith(
+        {
+          title: '새로운 메시지가 도착했습니다.',
+          message,
+          type: NotificationType.MESSAGE,
+          data: { roomId },
+        },
+        mockUser,
+      );
+    });
 
-  //       await messageService.fcmPushMessage(roomId, 'test', 'test message');
+    it('타겟 유저가 여러명 경우', async () => {
+      const mockUsers = [
+        mockUser,
+        { ...mockUser, id: 'test2', fcmToken: 'test2' },
+      ];
+      roomService.notiAllowRoom.mockResolvedValue(true);
+      userService.findUserByRoomId.mockResolvedValue(mockUsers);
 
-  //       expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
-  //       expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
-  //       expect(fcmService.pushMessage).toHaveBeenCalledTimes(mockUsers.length);
-  //       mockUsers.forEach((user) => {
-  //         expect(fcmService.pushMessage).toHaveBeenCalledWith({
-  //           token: user.fcmToken,
-  //           title: '새로운 메시지가 도착했습니다.',
-  //           message: 'test message',
-  //         });
-  //       });
-  //     });
+      await messageService.fcmPushMessage(roomId, userId, message);
 
-  //     it('타겟 유저가 여러명 경우 (해당이 안되는 유저 포함)', async () => {
-  //       const mockUsers = new Array(10).fill(0).map((_, i) => ({
-  //         ...mockUser,
-  //         id: `test${i}`,
-  //         fcmToken: i % 3 === 0 ? null : `test${i}`,
-  //         noti: i % 2 === 0,
-  //       }));
-  //       roomService.notiAllowRoom.mockResolvedValue(true);
-  //       userService.findUserByRoomId.mockResolvedValue(mockUsers);
+      expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(
+        mockUsers.length,
+      );
+      mockUsers.forEach((user) => {
+        expect(notificationService.createNotification).toHaveBeenCalledWith(
+          {
+            title: '새로운 메시지가 도착했습니다.',
+            message,
+            type: NotificationType.MESSAGE,
+            data: { roomId },
+          },
+          user,
+        );
+      });
+    });
 
-  //       await messageService.fcmPushMessage(roomId, 'test', 'test message');
+    it('타겟 유저가 여러명 경우 (해당이 안되는 유저 포함)', async () => {
+      const mockUsers = new Array(10).fill(0).map((_, i) => ({
+        ...mockUser,
+        id: `test${i}`,
+        fcmToken: i % 3 === 0 ? null : `test${i}`,
+        noti: i % 2 === 0,
+      }));
+      roomService.notiAllowRoom.mockResolvedValue(true);
+      userService.findUserByRoomId.mockResolvedValue(mockUsers);
 
-  //       expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
-  //       expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
-  //       const targetUsers = mockUsers.filter(
-  //         ({ noti, fcmToken }) => noti && fcmToken,
-  //       );
-  //       expect(fcmService.pushMessage).toHaveBeenCalledTimes(targetUsers.length);
-  //       targetUsers.forEach((user) => {
-  //         expect(fcmService.pushMessage).toHaveBeenCalledWith({
-  //           token: user.fcmToken,
-  //           title: '새로운 메시지가 도착했습니다.',
-  //           message: 'test message',
-  //         });
-  //       });
-  //     });
-  //   });
+      await messageService.fcmPushMessage(roomId, userId, message);
+
+      expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
+      const targetUsers = mockUsers.filter(({ noti }) => noti);
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(
+        targetUsers.length,
+      );
+      targetUsers.forEach((user) => {
+        expect(notificationService.createNotification).toHaveBeenCalledWith(
+          {
+            title: '새로운 메시지가 도착했습니다.',
+            message,
+            type: NotificationType.MESSAGE,
+            data: { roomId },
+          },
+          user,
+        );
+      });
+    });
+  });
 });

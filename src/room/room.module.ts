@@ -6,7 +6,7 @@ import { RoomService } from './room.service';
 
 import { UserModule } from 'src/user/user.module';
 import { MessageModule } from 'src/message/message.module';
-import { FcmModule } from 'src/fcm/fcm.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 import { Room } from './entities/room.entity';
 import { UserRoom } from './entities/user-room.entity';
@@ -17,7 +17,7 @@ import { UserRoom } from './entities/user-room.entity';
     TypeOrmModule.forFeature([UserRoom]),
     UserModule,
     forwardRef(() => MessageModule),
-    FcmModule,
+    NotificationModule,
   ],
   providers: [RoomResolver, RoomService],
   exports: [RoomService],

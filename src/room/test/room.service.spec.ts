@@ -15,7 +15,8 @@ import { NEW_ROOM, UPDATE_NEW_MESSAGE } from '../room.constants';
 import { RoomDetailInput } from '../dtos/room-detail.dto';
 import { MyRoomsInput } from '../dtos/my-rooms.dto';
 import { mockUser } from 'test/mockData';
-import { FcmService } from 'src/fcm/fcm.service';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from 'src/notification/entities/notification.entity';
 
 const mockUserService = () => ({
   findUserByRoomId: jest.fn(),
@@ -31,8 +32,8 @@ const mockMessageService = () => ({
   createSystemMessage: jest.fn(),
 });
 
-const mockFcmService = () => ({
-  pushMessage: jest.fn(),
+const mockNotificationService = () => ({
+  createNotification: jest.fn(),
 });
 
 const mockPubSub = () => ({
@@ -45,7 +46,7 @@ describe('RoomService 테스트', () => {
   let userRoomRepository: MockRepository<UserRoom>;
   let userService: MockService<UserService>;
   let messageService: MockService<MessageService>;
-  let fcmService: MockService<FcmService>;
+  let notificationService: MockService<NotificationService>;
   let pubSub: MockService<PubSub>;
 
   beforeEach(async () => {
@@ -70,8 +71,8 @@ describe('RoomService 테스트', () => {
           useValue: mockMessageService(),
         },
         {
-          provide: FcmService,
-          useValue: mockFcmService(),
+          provide: NotificationService,
+          useValue: mockNotificationService(),
         },
         {
           provide: PUB_SUB,
@@ -85,7 +86,7 @@ describe('RoomService 테스트', () => {
     userRoomRepository = module.get(getRepositoryToken(UserRoom));
     userService = module.get(UserService);
     messageService = module.get(MessageService);
-    fcmService = module.get(FcmService);
+    notificationService = module.get(NotificationService);
     pubSub = module.get(PUB_SUB);
   });
 
@@ -95,7 +96,7 @@ describe('RoomService 테스트', () => {
     expect(userRoomRepository).toBeDefined();
     expect(userService).toBeDefined();
     expect(messageService).toBeDefined();
-    expect(fcmService).toBeDefined();
+    expect(notificationService).toBeDefined();
     expect(pubSub).toBeDefined();
   });
 
@@ -353,15 +354,106 @@ describe('RoomService 테스트', () => {
         },
       });
 
-      expect(fcmService.pushMessage).toHaveBeenCalledTimes(1);
-      expect(fcmService.pushMessage).toHaveBeenCalledWith({
-        token: targetUser.fcmToken,
-        title: '새로운 채팅이 생성되었습니다.',
-        message: `${mockUser.nickname}님과 채팅을 시작해보세요!`,
-      });
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
+      expect(notificationService.createNotification).toHaveBeenCalledWith(
+        {
+          title: '새로운 채팅이 생성되었습니다.',
+          message: `${mockUser.nickname}님과 채팅을 시작해보세요!`,
+          type: NotificationType.ROOM,
+          data: {
+            roomId: room.id,
+          },
+        },
+        targetUser,
+      );
     });
 
     it('채팅 방 생성 (대상 제외 id가 겹치는 경우)', async () => {
+      const enabledUsers = [{ id: '4' }, { id: '5' }];
+      const myRoom = { id: 'my room' };
+      const targetRoom = { id: 'target room' };
+      const room = { id: 'room' };
+      userService.findUserById.mockReturnValueOnce(mockUser);
+      userService.findBlockedMe.mockReturnValueOnce([
+        { id: '1' },
+        { id: '2' },
+        { id: '3' },
+      ]);
+      roomRepository.find.mockResolvedValue([{ id: 'xxx' }]);
+      userRoomRepository.find.mockResolvedValue([
+        { user: { id: '3' } },
+        { user: { id: '2' } },
+      ]);
+      userService.findChatEnabledUsers.mockResolvedValue(enabledUsers);
+      userService.findUserById.mockReturnValueOnce(targetUser);
+      userRoomRepository.create.mockReturnValueOnce(myRoom);
+      userRoomRepository.create.mockReturnValueOnce(targetRoom);
+      roomRepository.create.mockReturnValueOnce(room);
+
+      const result = await roomService.createRandomRoom(mockUser);
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toBe(undefined);
+      expect(typeof result.room).toBe('object');
+
+      expect(userService.findUserById).toHaveBeenCalledTimes(2);
+      expect(enabledUsers.map(({ id }) => id)).toContain(
+        userService.findUserById.mock.lastCall[0],
+      );
+      expect(userService.findBlockedMe).toHaveBeenCalledTimes(1);
+      expect(roomRepository.find).toHaveBeenCalledTimes(1);
+      expect(userRoomRepository.find).toHaveBeenCalledTimes(1);
+      expect(userService.findChatEnabledUsers).toHaveBeenCalledTimes(1);
+      expect(userService.findChatEnabledUsers).toHaveBeenCalledWith(
+        ['3', '2', '1', mockUser.id],
+        { select: { id: true } },
+      );
+
+      expect(userRoomRepository.create).toHaveBeenCalledTimes(2);
+      expect(userRoomRepository.create).toHaveBeenNthCalledWith(1, {
+        user: mockUser,
+      });
+      expect(userRoomRepository.create).toHaveBeenNthCalledWith(2, {
+        user: targetUser,
+      });
+
+      expect(userRoomRepository.save).toHaveBeenCalledTimes(2);
+      expect(userRoomRepository.save).toHaveBeenNthCalledWith(1, myRoom);
+      expect(userRoomRepository.save).toHaveBeenNthCalledWith(2, targetRoom);
+
+      expect(roomRepository.create).toHaveBeenCalledTimes(1);
+      expect(roomRepository.create).toHaveBeenCalledWith({
+        userRooms: [myRoom, targetRoom],
+      });
+
+      expect(roomRepository.save).toHaveBeenCalledTimes(1);
+      expect(roomRepository.save).toHaveBeenCalledWith(room);
+
+      expect(pubSub.publish).toHaveBeenCalledTimes(1);
+      expect(pubSub.publish).toHaveBeenCalledWith(NEW_ROOM, {
+        newRoom: {
+          ...targetRoom,
+          room,
+          lastMessage: '',
+          users: [mockUser],
+        },
+      });
+
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
+      expect(notificationService.createNotification).toHaveBeenCalledWith(
+        {
+          title: '새로운 채팅이 생성되었습니다.',
+          message: `${mockUser.nickname}님과 채팅을 시작해보세요!`,
+          type: NotificationType.ROOM,
+          data: {
+            roomId: room.id,
+          },
+        },
+        targetUser,
+      );
+    });
+
+    it('채팅 방 생성 (상대방이 알림 차단 상태일 경우)', async () => {
       const disableNotiUser = { ...targetUser, noti: false };
       const enabledUsers = [{ id: '4' }, { id: '5' }];
       const myRoom = { id: 'my room' };
@@ -433,86 +525,7 @@ describe('RoomService 테스트', () => {
         },
       });
 
-      expect(fcmService.pushMessage).toHaveBeenCalledTimes(0);
-    });
-
-    it('채팅 방 생성 (상대방이 알림 차단 상태일 경우)', async () => {
-      const enabledUsers = [{ id: '4' }, { id: '5' }];
-      const myRoom = { id: 'my room' };
-      const targetRoom = { id: 'target room' };
-      const room = { id: 'room' };
-      userService.findUserById.mockReturnValueOnce(mockUser);
-      userService.findBlockedMe.mockReturnValueOnce([
-        { id: '1' },
-        { id: '2' },
-        { id: '3' },
-      ]);
-      roomRepository.find.mockResolvedValue([{ id: 'xxx' }]);
-      userRoomRepository.find.mockResolvedValue([
-        { user: { id: '3' } },
-        { user: { id: '2' } },
-      ]);
-      userService.findChatEnabledUsers.mockResolvedValue(enabledUsers);
-      userService.findUserById.mockReturnValueOnce(targetUser);
-      userRoomRepository.create.mockReturnValueOnce(myRoom);
-      userRoomRepository.create.mockReturnValueOnce(targetRoom);
-      roomRepository.create.mockReturnValueOnce(room);
-
-      const result = await roomService.createRandomRoom(mockUser);
-
-      expect(result.ok).toEqual(true);
-      expect(result.error).toBe(undefined);
-      expect(typeof result.room).toBe('object');
-
-      expect(userService.findUserById).toHaveBeenCalledTimes(2);
-      expect(enabledUsers.map(({ id }) => id)).toContain(
-        userService.findUserById.mock.lastCall[0],
-      );
-      expect(userService.findBlockedMe).toHaveBeenCalledTimes(1);
-      expect(roomRepository.find).toHaveBeenCalledTimes(1);
-      expect(userRoomRepository.find).toHaveBeenCalledTimes(1);
-      expect(userService.findChatEnabledUsers).toHaveBeenCalledTimes(1);
-      expect(userService.findChatEnabledUsers).toHaveBeenCalledWith(
-        ['3', '2', '1', mockUser.id],
-        { select: { id: true } },
-      );
-
-      expect(userRoomRepository.create).toHaveBeenCalledTimes(2);
-      expect(userRoomRepository.create).toHaveBeenNthCalledWith(1, {
-        user: mockUser,
-      });
-      expect(userRoomRepository.create).toHaveBeenNthCalledWith(2, {
-        user: targetUser,
-      });
-
-      expect(userRoomRepository.save).toHaveBeenCalledTimes(2);
-      expect(userRoomRepository.save).toHaveBeenNthCalledWith(1, myRoom);
-      expect(userRoomRepository.save).toHaveBeenNthCalledWith(2, targetRoom);
-
-      expect(roomRepository.create).toHaveBeenCalledTimes(1);
-      expect(roomRepository.create).toHaveBeenCalledWith({
-        userRooms: [myRoom, targetRoom],
-      });
-
-      expect(roomRepository.save).toHaveBeenCalledTimes(1);
-      expect(roomRepository.save).toHaveBeenCalledWith(room);
-
-      expect(pubSub.publish).toHaveBeenCalledTimes(1);
-      expect(pubSub.publish).toHaveBeenCalledWith(NEW_ROOM, {
-        newRoom: {
-          ...targetRoom,
-          room,
-          lastMessage: '',
-          users: [mockUser],
-        },
-      });
-
-      expect(fcmService.pushMessage).toHaveBeenCalledTimes(1);
-      expect(fcmService.pushMessage).toHaveBeenCalledWith({
-        token: targetUser.fcmToken,
-        title: '새로운 채팅이 생성되었습니다.',
-        message: `${mockUser.nickname}님과 채팅을 시작해보세요!`,
-      });
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(0);
     });
   });
 
