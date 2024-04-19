@@ -74,6 +74,18 @@ describe('NotificationService 테스트', () => {
     expect(notificationRepository.find).toHaveBeenCalledTimes(1);
   });
 
+  it('안 읽은 알림 수 조회 테스트', async () => {
+    notificationRepository.count.mockResolvedValue(10);
+
+    const result = await notificationService.unReadNotificationCount(mockUser);
+
+    expect(result.ok).toEqual(true);
+    expect(result.error).toEqual(undefined);
+    expect(result.count).toEqual(10);
+
+    expect(notificationRepository.count).toHaveBeenCalledTimes(1);
+  });
+
   describe('알림 생성 테스트', () => {
     it('알림 생성 (유저가 토큰이 없는 경우)', async () => {
       const user = { ...mockUser, fcmToken: null };
@@ -184,6 +196,28 @@ describe('NotificationService 테스트', () => {
         },
       );
     });
+
+    it('전체 알림 읽음 처리', async () => {
+      const notificationList = [
+        mockNotification,
+        { ...mockNotification, id: '2' },
+      ];
+      notificationRepository.find.mockResolvedValue(notificationList);
+
+      const result = await notificationService.readAllNotifications(mockUser);
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+
+      expect(notificationRepository.find).toHaveBeenCalledTimes(1);
+      expect(notificationRepository.update).toHaveBeenCalledTimes(1);
+      expect(notificationRepository.update).toHaveBeenCalledWith(
+        notificationList.map((notification) => notification.id),
+        {
+          read: true,
+        },
+      );
+    });
   });
 
   describe('알림 삭제 테스트', () => {
@@ -216,6 +250,26 @@ describe('NotificationService 테스트', () => {
       expect(notificationRepository.softDelete).toHaveBeenCalledTimes(1);
       expect(notificationRepository.softDelete).toHaveBeenCalledWith(
         mockNotification.id,
+      );
+    });
+
+    it('읽은 알림 전체 삭제', async () => {
+      const notificationList = [
+        mockNotification,
+        { ...mockNotification, id: '2' },
+      ];
+      notificationRepository.find.mockResolvedValue(notificationList);
+
+      const result =
+        await notificationService.deleteReadNotifications(mockUser);
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+
+      expect(notificationRepository.find).toHaveBeenCalledTimes(1);
+      expect(notificationRepository.softDelete).toHaveBeenCalledTimes(1);
+      expect(notificationRepository.softDelete).toHaveBeenCalledWith(
+        notificationList.map((notification) => notification.id),
       );
     });
   });

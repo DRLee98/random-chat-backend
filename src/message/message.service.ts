@@ -144,10 +144,14 @@ export class MessageService {
       this.pubSub.publish(NEW_MESSAGE, {
         newMessage: message,
       });
-      this.fcmPushMessage(input.roomId, user.id, input.contents);
+      this.createNotiMessage(
+        input.roomId,
+        user.id,
+        `${user.nickname}: ${input.contents}`,
+      );
 
       this.roomService.updateRoomUpdateAt(input.roomId);
-      this.roomService.updateNewMesssageInUserRoom(
+      await this.roomService.updateNewMesssageInUserRoom(
         input.roomId,
         user.id,
         input.contents,
@@ -250,20 +254,14 @@ export class MessageService {
     await this.createSystemMessage(roomId, contents, user, false);
   }
 
-  async fcmPushMessage(roomId: string, userId: string, message: string) {
-    const allowed = await this.roomService.notiAllowRoom(roomId, userId);
-    if (!allowed) return;
-
-    const users = await this.userService.findUserByRoomId(
+  async createNotiMessage(roomId: string, userId: string, message: string) {
+    const allowRoomIds = await this.roomService.notiAllowRoomIds(
       roomId,
-      {
-        select: {
-          fcmToken: true,
-          noti: true,
-        },
-      },
-      [userId],
+      userId,
     );
+    if (allowRoomIds.length === 0) return;
+
+    const users = await this.userService.findUserByUserRoomId(allowRoomIds);
     users.forEach((user) => {
       if (user.noti) {
         this.notificationService.createNotification(

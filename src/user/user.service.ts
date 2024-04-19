@@ -317,6 +317,21 @@ export class UserService {
     return user;
   }
 
+  async findUserByUserRoomId(
+    ids: string[],
+    options?: Omit<FindOneOptions<User>, 'where'>,
+  ): Promise<User[]> {
+    const user = await this.userRepository.find({
+      ...options,
+      where: {
+        rooms: {
+          id: In(ids),
+        },
+      },
+    });
+    return user;
+  }
+
   async randomNickname(): Promise<RandomNicknameOutput> {
     try {
       let nickname = '';

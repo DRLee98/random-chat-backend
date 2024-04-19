@@ -12,6 +12,7 @@ import {
   ViewNotificationsInput,
   ViewNotificationsOutput,
 } from './dtos/view-notifications.dto';
+import { UnReadNotificationCountOutput } from './dtos/un-read-notification-count';
 import {
   CreateNotificationInput,
   CreateNotificationOutput,
@@ -20,10 +21,12 @@ import {
   ReadNotificationInput,
   ReadNotificationOutput,
 } from './dtos/read-notification.dto';
+import { ReadAllNotificationsOutput } from './dtos/read-all-notifications.dto';
 import {
   DeleteNotificationInput,
   DeleteNotificationOutput,
 } from './dtos/delete-notification.dto';
+import { DeleteReadNotificationsOutput } from './dtos/delete-read-notifications.dto';
 
 @Injectable()
 export class NotificationService {
@@ -41,9 +44,12 @@ export class NotificationService {
     try {
       const notifications = await this.notificationRepository.find({
         where: {
-          user,
+          user: {
+            id: user.id,
+          },
         },
         order: {
+          read: 'ASC',
           createdAt: 'DESC',
         },
         ...this.commonService.paginationOption(input),
@@ -52,12 +58,38 @@ export class NotificationService {
       const output = await this.commonService.paginationOutput(
         input,
         this.notificationRepository,
-        { user },
+        {
+          user: {
+            id: user.id,
+          },
+        },
       );
 
       return {
         notifications,
         ...output,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  };
+
+  unReadNotificationCount = async (
+    user: User,
+  ): Promise<UnReadNotificationCountOutput> => {
+    try {
+      const count = await this.notificationRepository.count({
+        where: {
+          read: false,
+          user: {
+            id: user.id,
+          },
+        },
+      });
+
+      return {
+        ok: true,
+        count,
       };
     } catch (error) {
       return this.commonService.error(error);
@@ -103,7 +135,9 @@ export class NotificationService {
       const notification = await this.notificationRepository.findOne({
         where: {
           id: input.id,
-          user,
+          user: {
+            id: user.id,
+          },
         },
       });
 
@@ -111,6 +145,33 @@ export class NotificationService {
         return this.commonService.error('알림을 찾을 수 없습니다.');
 
       await this.notificationRepository.update(notification.id, { read: true });
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  };
+
+  readAllNotifications = async (
+    user: User,
+  ): Promise<ReadAllNotificationsOutput> => {
+    try {
+      const notifications = await this.notificationRepository.find({
+        where: {
+          user: {
+            id: user.id,
+          },
+          read: false,
+        },
+      });
+
+      const notificationIds = notifications.map(
+        (notification) => notification.id,
+      );
+
+      await this.notificationRepository.update(notificationIds, { read: true });
 
       return {
         ok: true,
@@ -128,7 +189,9 @@ export class NotificationService {
       const notification = await this.notificationRepository.findOne({
         where: {
           id: input.id,
-          user,
+          user: {
+            id: user.id,
+          },
         },
       });
 
@@ -136,6 +199,33 @@ export class NotificationService {
         return this.commonService.error('알림을 찾을 수 없습니다.');
 
       await this.notificationRepository.softDelete(notification.id);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  };
+
+  deleteReadNotifications = async (
+    user: User,
+  ): Promise<DeleteReadNotificationsOutput> => {
+    try {
+      const notifications = await this.notificationRepository.find({
+        where: {
+          user: {
+            id: user.id,
+          },
+          read: true,
+        },
+      });
+
+      const notificationIds = notifications.map(
+        (notification) => notification.id,
+      );
+
+      await this.notificationRepository.softDelete(notificationIds);
 
       return {
         ok: true,

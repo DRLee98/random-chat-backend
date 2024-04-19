@@ -479,19 +479,19 @@ export class RoomService {
     });
   }
 
-  async notiAllowRoom(roomId: string, userId: string) {
-    const userRoom = await this.userRoomRepository.findOne({
+  async notiAllowRoomIds(roomId: string, userId: string) {
+    const userRoom = await this.userRoomRepository.find({
       where: {
         room: {
           id: roomId,
         },
         user: {
-          id: userId,
+          id: Not(userId),
         },
         noti: true,
       },
     });
 
-    return Boolean(userRoom);
+    return userRoom.map((item) => item.id);
   }
 }

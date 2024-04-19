@@ -18,7 +18,7 @@ import { NotificationType } from 'src/notification/entities/notification.entity'
 const roomId = 'test room';
 
 const mockUserService = () => ({
-  findUserByRoomId: jest.fn(),
+  findUserByUserRoomId: jest.fn(),
 });
 
 const mockRoomService = () => ({
@@ -27,6 +27,7 @@ const mockRoomService = () => ({
   updateNewMesssageInUserRoom: jest.fn(),
   updateRoomUpdateAt: jest.fn(),
   notiAllowRoom: jest.fn(),
+  notiAllowRoomIds: jest.fn(),
 });
 
 const mockNotificationService = () => ({
@@ -187,8 +188,8 @@ describe('MessageService 테스트', () => {
       messageRepository.create.mockReturnValue(message);
       messageRepository.findOne.mockResolvedValue({ createdAt: new Date() });
       messageRepository.find.mockResolvedValue([]);
-      roomService.notiAllowRoom.mockResolvedValue(true);
-      userService.findUserByRoomId.mockResolvedValue([mockUser]);
+      roomService.notiAllowRoomIds.mockResolvedValue(['test']);
+      userService.findUserByUserRoomId.mockResolvedValue([mockUser]);
 
       const result = await messageService.sendMessage(input, mockUser);
 
@@ -251,8 +252,8 @@ describe('MessageService 테스트', () => {
       messageRepository.create.mockReturnValue(message);
       messageRepository.findOne.mockResolvedValue(lastMessage);
       messageRepository.find.mockResolvedValue([]);
-      roomService.notiAllowRoom.mockResolvedValue(true);
-      userService.findUserByRoomId.mockResolvedValue([mockUser]);
+      roomService.notiAllowRoomIds.mockResolvedValue(['test']);
+      userService.findUserByUserRoomId.mockResolvedValue([mockUser]);
 
       const result = await messageService.sendMessage(input, mockUser);
 
@@ -349,35 +350,35 @@ describe('MessageService 테스트', () => {
     const message = 'test message';
 
     it('채팅방 알림을 끈 경우', async () => {
-      roomService.notiAllowRoom.mockResolvedValue(false);
+      roomService.notiAllowRoomIds.mockResolvedValue([]);
 
-      await messageService.fcmPushMessage(roomId, userId, message);
+      await messageService.createNotiMessage(roomId, userId, message);
 
-      expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
-      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(0);
+      expect(roomService.notiAllowRoomIds).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByUserRoomId).toHaveBeenCalledTimes(0);
       expect(notificationService.createNotification).toHaveBeenCalledTimes(0);
     });
 
     it('타겟 유저가 없을 경우', async () => {
-      roomService.notiAllowRoom.mockResolvedValue(true);
-      userService.findUserByRoomId.mockResolvedValue([
+      roomService.notiAllowRoomIds.mockResolvedValue(['test']);
+      userService.findUserByUserRoomId.mockResolvedValue([
         { ...mockUser, noti: false },
       ]);
 
-      await messageService.fcmPushMessage(roomId, userId, message);
+      await messageService.createNotiMessage(roomId, userId, message);
 
-      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByUserRoomId).toHaveBeenCalledTimes(1);
       expect(notificationService.createNotification).toHaveBeenCalledTimes(0);
     });
 
     it('타겟 유저가 있을 경우', async () => {
-      roomService.notiAllowRoom.mockResolvedValue(true);
-      userService.findUserByRoomId.mockResolvedValue([mockUser]);
+      roomService.notiAllowRoomIds.mockResolvedValue(['test']);
+      userService.findUserByUserRoomId.mockResolvedValue([mockUser]);
 
-      await messageService.fcmPushMessage(roomId, userId, message);
+      await messageService.createNotiMessage(roomId, userId, message);
 
-      expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
-      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
+      expect(roomService.notiAllowRoomIds).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByUserRoomId).toHaveBeenCalledTimes(1);
       expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
       expect(notificationService.createNotification).toHaveBeenCalledWith(
         {
@@ -395,13 +396,13 @@ describe('MessageService 테스트', () => {
         mockUser,
         { ...mockUser, id: 'test2', fcmToken: 'test2' },
       ];
-      roomService.notiAllowRoom.mockResolvedValue(true);
-      userService.findUserByRoomId.mockResolvedValue(mockUsers);
+      roomService.notiAllowRoomIds.mockResolvedValue(['test', 'test2']);
+      userService.findUserByUserRoomId.mockResolvedValue(mockUsers);
 
-      await messageService.fcmPushMessage(roomId, userId, message);
+      await messageService.createNotiMessage(roomId, userId, message);
 
-      expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
-      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
+      expect(roomService.notiAllowRoomIds).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByUserRoomId).toHaveBeenCalledTimes(1);
       expect(notificationService.createNotification).toHaveBeenCalledTimes(
         mockUsers.length,
       );
@@ -425,13 +426,15 @@ describe('MessageService 테스트', () => {
         fcmToken: i % 3 === 0 ? null : `test${i}`,
         noti: i % 2 === 0,
       }));
-      roomService.notiAllowRoom.mockResolvedValue(true);
-      userService.findUserByRoomId.mockResolvedValue(mockUsers);
+      roomService.notiAllowRoomIds.mockResolvedValue([
+        ...mockUsers.map(({ id }) => `${id}-test`),
+      ]);
+      userService.findUserByUserRoomId.mockResolvedValue(mockUsers);
 
-      await messageService.fcmPushMessage(roomId, userId, message);
+      await messageService.createNotiMessage(roomId, userId, message);
 
-      expect(roomService.notiAllowRoom).toHaveBeenCalledTimes(1);
-      expect(userService.findUserByRoomId).toHaveBeenCalledTimes(1);
+      expect(roomService.notiAllowRoomIds).toHaveBeenCalledTimes(1);
+      expect(userService.findUserByUserRoomId).toHaveBeenCalledTimes(1);
       const targetUsers = mockUsers.filter(({ noti }) => noti);
       expect(notificationService.createNotification).toHaveBeenCalledTimes(
         targetUsers.length,
