@@ -17,7 +17,7 @@ import { User } from './user/entites/user.entity';
 import { Room } from './room/entites/room.entity';
 import { UserRoom } from './room/entites/user-room.entity';
 import { Message } from './message/entites/message.entity';
-import { Notice } from './notice/entities/notice.entity';
+import { Notice } from './notice/entites/notice.entity';
 
 @Module({
   imports: [

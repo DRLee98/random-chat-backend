@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { Notice, NoticeCategory } from '../entities/notice.entity';
+import { Notice, NoticeCategory } from '../entites/notice.entity';
 import {
   PaginationInput,
   PaginationOutput,

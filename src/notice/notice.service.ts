@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { CommonService } from 'src/common/common.service';
 
-import { Notice } from './entities/notice.entity';
+import { Notice } from './entites/notice.entity';
 
 import { NoticeListInput, NoticeListOutput } from './dtos/notice-list.dto';
 import { NoticeInput, NoticeOutput } from './dtos/notice.dto';

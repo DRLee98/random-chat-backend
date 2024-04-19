@@ -47,6 +47,9 @@ describe('FcmService 테스트', () => {
       token: 'test token',
       title: 'test title',
       message: 'test message',
+      data: {
+        body: 'test data body',
+      },
     });
 
     expect(admin.messaging).toHaveBeenCalledTimes(1);

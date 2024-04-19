@@ -15,17 +15,22 @@ export class FcmService {
     });
   }
 
-  async pushMessage({ token, title, message }: PushMessageInput) {
+  async pushMessage({
+    token,
+    title,
+    message,
+    imageUrl,
+    data,
+  }: PushMessageInput) {
     try {
       await admin.messaging().send({
         token,
         notification: {
           title: title,
           body: message,
+          imageUrl,
         },
-        data: {
-          body: message,
-        },
+        data,
       });
       return true;
     } catch (error) {
