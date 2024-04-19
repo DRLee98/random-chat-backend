@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 
 import { AwsModule } from 'src/aws/aws.module';
 
-import { User } from './entites/user.entity';
+import { User } from './entities/user.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), AwsModule],

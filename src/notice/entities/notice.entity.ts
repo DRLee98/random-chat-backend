@@ -6,7 +6,7 @@ import {
 } from '@nestjs/graphql';
 import { Column, Entity } from 'typeorm';
 
-import { CoreEntity } from 'src/common/entites/core.entity';
+import { CoreEntity } from 'src/common/entities/core.entity';
 
 export enum NoticeCategory {
   INFO = 'INFO',

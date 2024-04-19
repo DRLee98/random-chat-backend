@@ -6,7 +6,7 @@ import {
   PartialType,
   PickType,
 } from '@nestjs/graphql';
-import { UserRoom } from '../entites/user-room.entity';
+import { UserRoom } from '../entities/user-room.entity';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 
 @InputType()

@@ -1,5 +1,5 @@
 import { Upload } from 'graphql-upload';
-import { Language, SocialPlatform, User } from 'src/user/entites/user.entity';
+import { Language, SocialPlatform, User } from 'src/user/entities/user.entity';
 
 export const mockUser: User = {
   id: 'xx',

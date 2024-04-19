@@ -7,8 +7,8 @@ import { RoomService } from 'src/room/room.service';
 import { FcmService } from 'src/fcm/fcm.service';
 import { CommonService } from 'src/common/common.service';
 
-import { Message, MessageType } from './entites/message.entity';
-import { User } from 'src/user/entites/user.entity';
+import { Message, MessageType } from './entities/message.entity';
+import { User } from 'src/user/entities/user.entity';
 
 import {
   ViewMessagesInput,

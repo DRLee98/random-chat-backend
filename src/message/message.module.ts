@@ -8,10 +8,9 @@ import { UserModule } from 'src/user/user.module';
 import { RoomModule } from 'src/room/room.module';
 import { FcmModule } from 'src/fcm/fcm.module';
 
-import { Message } from './entites/message.entity';
+import { Message } from './entities/message.entity';
 
 @Module({
-  exports: [MessageService],
   imports: [
     TypeOrmModule.forFeature([Message]),
     UserModule,
@@ -19,5 +18,6 @@ import { Message } from './entites/message.entity';
     FcmModule,
   ],
   providers: [MessageResolver, MessageService],
+  exports: [MessageService],
 })
 export class MessageModule {}

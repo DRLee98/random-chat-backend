@@ -5,7 +5,7 @@ import { FindOneOptions, In, Not, Repository } from 'typeorm';
 import { AwsService } from 'src/aws/aws.service';
 import { CommonService } from 'src/common/common.service';
 
-import { SocialPlatform, User } from './entites/user.entity';
+import { SocialPlatform, User } from './entities/user.entity';
 
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { UpdateUserInput, UpdateUserOutput } from './dtos/update-user.dto';

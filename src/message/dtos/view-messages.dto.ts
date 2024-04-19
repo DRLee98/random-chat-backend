@@ -1,5 +1,5 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
-import { Message } from '../entites/message.entity';
+import { Message } from '../entities/message.entity';
 import {
   PaginationInput,
   PaginationOutput,

@@ -5,7 +5,7 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginInput } from '../dtos/login.dto';
 import { MockService } from 'test/utils';
-import { SocialPlatform } from 'src/user/entites/user.entity';
+import { SocialPlatform } from 'src/user/entities/user.entity';
 
 const token = 'Bearer token';
 

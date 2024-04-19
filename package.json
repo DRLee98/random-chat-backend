@@ -100,7 +100,7 @@
       "test",
       "test-config",
       "dtos",
-      "entites",
+      "entities",
       "coverage",
       "<rootDir>/src/main.ts",
       ".module.ts",

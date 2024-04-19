@@ -13,11 +13,11 @@ import { AwsModule } from './aws/aws.module';
 import { FcmModule } from './fcm/fcm.module';
 import { NoticeModule } from './notice/notice.module';
 
-import { User } from './user/entites/user.entity';
-import { Room } from './room/entites/room.entity';
-import { UserRoom } from './room/entites/user-room.entity';
-import { Message } from './message/entites/message.entity';
-import { Notice } from './notice/entites/notice.entity';
+import { User } from './user/entities/user.entity';
+import { Room } from './room/entities/room.entity';
+import { UserRoom } from './room/entities/user-room.entity';
+import { Message } from './message/entities/message.entity';
+import { Notice } from './notice/entities/notice.entity';
 
 @Module({
   imports: [

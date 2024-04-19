@@ -3,7 +3,7 @@ import { NoticeService } from '../notice.service';
 import { CommonService } from 'src/common/common.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MockRepository, mockRepository } from 'test/utils';
-import { Notice, NoticeCategory } from '../entites/notice.entity';
+import { Notice, NoticeCategory } from '../entities/notice.entity';
 
 const mockNotice: Notice = {
   id: '1',

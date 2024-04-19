@@ -5,12 +5,12 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/graphql';
-import { UserRoom } from '../entites/user-room.entity';
+import { UserRoom } from '../entities/user-room.entity';
 import {
   PaginationInput,
   PaginationOutput,
 } from 'src/common/dtos/pagination.dto';
-import { User } from 'src/user/entites/user.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @InputType()
 export class MyRoomsInput extends PaginationInput {}

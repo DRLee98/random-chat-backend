@@ -1,6 +1,6 @@
 import { Field, ID, ObjectType, PickType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
-import { User } from '../entites/user.entity';
+import { User } from '../entities/user.entity';
 
 @ObjectType()
 class Me extends PickType(User, ['id', 'nickname', 'profileUrl'], ObjectType) {

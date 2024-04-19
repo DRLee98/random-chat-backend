@@ -1,6 +1,6 @@
 import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
-import { User } from '../entites/user.entity';
+import { User } from '../entities/user.entity';
 import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 import { Upload } from 'graphql-upload';
 

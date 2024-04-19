@@ -1,6 +1,6 @@
 import { Field, ID, InputType, ObjectType, OmitType } from '@nestjs/graphql';
-import { User } from 'src/user/entites/user.entity';
-import { UserRoom } from '../entites/user-room.entity';
+import { User } from 'src/user/entities/user.entity';
+import { UserRoom } from '../entities/user-room.entity';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 
 @InputType()

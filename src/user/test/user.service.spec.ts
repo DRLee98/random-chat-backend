@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MockRepository, MockService, mockRepository } from 'test/utils';
-import { User } from '../entites/user.entity';
+import { User } from '../entities/user.entity';
 import { UserService } from '../user.service';
 import { AwsService } from 'src/aws/aws.service';
 import { CommonService } from 'src/common/common.service';

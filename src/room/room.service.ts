@@ -7,9 +7,9 @@ import { MessageService } from 'src/message/message.service';
 import { FcmService } from 'src/fcm/fcm.service';
 import { CommonService } from 'src/common/common.service';
 
-import { Room } from './entites/room.entity';
-import { UserRoom } from './entites/user-room.entity';
-import { User } from 'src/user/entites/user.entity';
+import { Room } from './entities/room.entity';
+import { UserRoom } from './entities/user-room.entity';
+import { User } from 'src/user/entities/user.entity';
 
 import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';

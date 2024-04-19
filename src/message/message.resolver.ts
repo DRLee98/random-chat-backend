@@ -3,8 +3,8 @@ import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 
 import { MessageService } from './message.service';
 
-import { Message, MessageType } from './entites/message.entity';
-import { User } from 'src/user/entites/user.entity';
+import { Message, MessageType } from './entities/message.entity';
+import { User } from 'src/user/entities/user.entity';
 import { LoggedInUser } from 'src/user/user.decorator';
 
 import {

@@ -2,7 +2,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { UserService } from './user.service';
 
-import { User } from './entites/user.entity';
+import { User } from './entities/user.entity';
 import { LoggedInUser } from './user.decorator';
 import { Public } from 'src/auth/auth.decorator';
 

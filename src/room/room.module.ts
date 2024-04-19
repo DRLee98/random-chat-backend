@@ -8,11 +8,10 @@ import { UserModule } from 'src/user/user.module';
 import { MessageModule } from 'src/message/message.module';
 import { FcmModule } from 'src/fcm/fcm.module';
 
-import { Room } from './entites/room.entity';
-import { UserRoom } from './entites/user-room.entity';
+import { Room } from './entities/room.entity';
+import { UserRoom } from './entities/user-room.entity';
 
 @Module({
-  exports: [RoomService],
   imports: [
     TypeOrmModule.forFeature([Room]),
     TypeOrmModule.forFeature([UserRoom]),
@@ -21,5 +20,6 @@ import { UserRoom } from './entites/user-room.entity';
     FcmModule,
   ],
   providers: [RoomResolver, RoomService],
+  exports: [RoomService],
 })
 export class RoomModule {}

@@ -3,7 +3,7 @@ import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 
 import { RoomService } from './room.service';
 
-import { User } from 'src/user/entites/user.entity';
+import { User } from 'src/user/entities/user.entity';
 import { LoggedInUser } from 'src/user/user.decorator';
 
 import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';

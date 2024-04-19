@@ -5,7 +5,7 @@ import {
   PartialType,
   PickType,
 } from '@nestjs/graphql';
-import { User } from '../entites/user.entity';
+import { User } from '../entities/user.entity';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 import { Upload } from 'graphql-upload';

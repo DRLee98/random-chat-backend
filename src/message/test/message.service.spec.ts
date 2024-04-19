@@ -5,7 +5,7 @@ import { MockRepository, MockService, mockRepository } from 'test/utils';
 import { CommonService } from 'src/common/common.service';
 import { RoomService } from 'src/room/room.service';
 import { PubSub } from 'graphql-subscriptions';
-import { Message, MessageType } from '../entites/message.entity';
+import { Message, MessageType } from '../entities/message.entity';
 import { PUB_SUB } from 'src/common/common.constants';
 import { NEW_MESSAGE, READ_MESSAGE } from '../message.constants';
 import { SendMessageInput } from '../dtos/send-message.dto';
