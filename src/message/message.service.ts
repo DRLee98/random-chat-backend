@@ -85,8 +85,8 @@ export class MessageService {
         ...this.commonService.paginationOption(input),
       });
 
-      await this.roomService.resetNewMessageInUserRoom(input.roomId, user.id);
-      await this.readMessage(input.roomId, user.id);
+      this.roomService.resetNewMessageInUserRoom(input.roomId, user.id);
+      this.readMessage(input.roomId, user.id);
 
       const output = await this.commonService.paginationOutput(
         input,
@@ -151,7 +151,7 @@ export class MessageService {
       );
 
       this.roomService.updateRoomUpdateAt(input.roomId);
-      await this.roomService.updateNewMesssageInUserRoom(
+      this.roomService.updateNewMesssageInUserRoom(
         input.roomId,
         user.id,
         input.contents,

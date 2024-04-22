@@ -439,7 +439,7 @@ export class RoomService {
     userRooms.forEach(async (item) => {
       const newMessageCount = item.newMessage + 1;
 
-      this.userRoomRepository.update(item.id, {
+      await this.userRoomRepository.update(item.id, {
         newMessage: newMessageCount,
       });
       this.pubSub.publish(UPDATE_NEW_MESSAGE, {
