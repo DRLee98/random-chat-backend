@@ -91,7 +91,7 @@ export class NotificationResolver {
   }
 
   @Subscription(() => Notification, {
-    filter: (payload, _, context) => {
+    filter(payload, _, context) {
       return payload.newNotification.user.id === context.user.id;
     },
     resolve(payload) {

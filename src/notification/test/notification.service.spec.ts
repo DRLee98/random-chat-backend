@@ -7,23 +7,11 @@ import {
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FcmService } from 'src/fcm/fcm.service';
-import { mockUser } from 'test/mockData';
+import { mockNotification, mockUser } from 'test/mockData';
 import { CommonService } from 'src/common/common.service';
 import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { NEW_NOTIFICATION } from '../notification.constants';
-
-const mockNotification: Notification = {
-  id: '1',
-  title: 'title',
-  message: 'message',
-  type: NotificationType.SYSTEM,
-  read: false,
-  user: mockUser,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  deletedAt: null,
-};
 
 const mockFcmService = () => ({
   pushMessage: jest.fn(),

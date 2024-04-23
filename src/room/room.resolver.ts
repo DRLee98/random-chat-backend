@@ -64,7 +64,7 @@ export class RoomResolver {
   }
 
   @Subscription(() => MyRoom, {
-    filter: (payload, _, context) => {
+    filter(payload, _, context) {
       return payload.newRoom.user.id === context.user.id;
     },
     resolve(payload) {
@@ -76,7 +76,7 @@ export class RoomResolver {
   }
 
   @Subscription(() => UpdateNewMessageInUserRoom, {
-    filter: (payload, _, context) => {
+    filter(payload, _, context) {
       return payload.updateNewMessageInUserRoom.userId === context.user.id;
     },
     resolve(payload) {

@@ -3,18 +3,8 @@ import { NoticeService } from '../notice.service';
 import { CommonService } from 'src/common/common.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MockRepository, mockRepository } from 'test/utils';
-import { Notice, NoticeCategory } from '../entities/notice.entity';
-
-const mockNotice: Notice = {
-  id: '1',
-  title: 'title',
-  content: 'content',
-  category: NoticeCategory.INFO,
-  pinned: false,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  deletedAt: null,
-};
+import { Notice } from '../entities/notice.entity';
+import { mockNotice } from 'test/mockData';
 
 describe('NoticeService 테스트', () => {
   let noticeService: NoticeService;

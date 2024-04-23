@@ -43,7 +43,7 @@ export class MessageResolver {
   }
 
   @Subscription(() => Message, {
-    filter: (payload, variables, context) => {
+    filter(payload, variables, context) {
       return (
         payload.newMessage.type === MessageType.SYSTEM ||
         (payload.newMessage.room.id === variables.input.roomId &&
@@ -65,7 +65,7 @@ export class MessageResolver {
   }
 
   @Subscription(() => ReadMessage, {
-    filter: (payload, variables, context) => {
+    filter(payload, variables, context) {
       return (
         payload.readMessage.roomId === variables.input.roomId &&
         payload.readMessage.userId !== context.user.id

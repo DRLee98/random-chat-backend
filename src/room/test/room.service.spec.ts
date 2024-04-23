@@ -10,11 +10,10 @@ import { MessageService } from 'src/message/message.service';
 import { PUB_SUB } from 'src/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { DeleteRoomInput } from '../dtos/delete-room.dto';
-import { Language, SocialPlatform, User } from 'src/user/entities/user.entity';
 import { NEW_ROOM, UPDATE_NEW_MESSAGE } from '../room.constants';
 import { RoomDetailInput } from '../dtos/room-detail.dto';
 import { MyRoomsInput } from '../dtos/my-rooms.dto';
-import { mockUser } from 'test/mockData';
+import { mockUser, mockUser2 } from 'test/mockData';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationType } from 'src/notification/entities/notification.entity';
 
@@ -247,24 +246,6 @@ describe('RoomService 테스트', () => {
   });
 
   describe('랜덤 방 생성 테스트', () => {
-    const targetUser: User = {
-      id: 'target',
-      socialId: 'target',
-      socialPlatform: SocialPlatform.NAVER,
-      fcmToken: 'token',
-      nickname: 'target',
-      noti: true,
-      allowMessage: true,
-      language: Language.ko,
-      autoTranslation: false,
-      blockUsers: [],
-      rooms: [],
-      messages: [],
-      notifications: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
-    };
     it('채팅 가능한 유저가 없는 경우', async () => {
       userService.findUserById.mockReturnValueOnce(mockUser);
       userService.findBlockedMe.mockReturnValueOnce([]);
@@ -300,7 +281,7 @@ describe('RoomService 테스트', () => {
       roomRepository.find.mockResolvedValue([{ id: 'xxx' }]);
       userRoomRepository.find.mockResolvedValue([{ user: { id: '3' } }]);
       userService.findChatEnabledUsers.mockResolvedValue(enabledUsers);
-      userService.findUserById.mockReturnValueOnce(targetUser);
+      userService.findUserById.mockReturnValueOnce(mockUser2);
       userRoomRepository.create.mockReturnValueOnce(myRoom);
       userRoomRepository.create.mockReturnValueOnce(targetRoom);
       roomRepository.create.mockReturnValueOnce(room);
@@ -329,7 +310,7 @@ describe('RoomService 테스트', () => {
         user: mockUser,
       });
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(2, {
-        user: targetUser,
+        user: mockUser2,
       });
 
       expect(userRoomRepository.save).toHaveBeenCalledTimes(2);
@@ -364,7 +345,7 @@ describe('RoomService 테스트', () => {
             roomId: room.id,
           },
         },
-        targetUser,
+        mockUser2,
       );
     });
 
@@ -385,7 +366,7 @@ describe('RoomService 테스트', () => {
         { user: { id: '2' } },
       ]);
       userService.findChatEnabledUsers.mockResolvedValue(enabledUsers);
-      userService.findUserById.mockReturnValueOnce(targetUser);
+      userService.findUserById.mockReturnValueOnce(mockUser2);
       userRoomRepository.create.mockReturnValueOnce(myRoom);
       userRoomRepository.create.mockReturnValueOnce(targetRoom);
       roomRepository.create.mockReturnValueOnce(room);
@@ -414,7 +395,7 @@ describe('RoomService 테스트', () => {
         user: mockUser,
       });
       expect(userRoomRepository.create).toHaveBeenNthCalledWith(2, {
-        user: targetUser,
+        user: mockUser2,
       });
 
       expect(userRoomRepository.save).toHaveBeenCalledTimes(2);
@@ -449,12 +430,12 @@ describe('RoomService 테스트', () => {
             roomId: room.id,
           },
         },
-        targetUser,
+        mockUser2,
       );
     });
 
     it('채팅 방 생성 (상대방이 알림 차단 상태일 경우)', async () => {
-      const disableNotiUser = { ...targetUser, noti: false };
+      const disableNotiUser = { ...mockUser2, noti: false };
       const enabledUsers = [{ id: '4' }, { id: '5' }];
       const myRoom = { id: 'my room' };
       const targetRoom = { id: 'target room' };

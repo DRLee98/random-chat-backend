@@ -5,10 +5,13 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { UserRoom } from 'src/room/entities/user-room.entity';
 import { Notification } from 'src/notification/entities/notification.entity';
+import { Comment } from 'src/comment/entities/comment.entity';
+import { Reply } from 'src/reply/entities/reply.entity';
 
 export enum Language {
   ko = 'ko', // 한국어
@@ -95,4 +98,12 @@ export class User extends CoreEntity {
   @Field(() => [Notification])
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[];
+
+  @Field(() => [Comment])
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
+
+  @Field(() => [Reply])
+  @OneToMany(() => Reply, (reply) => reply.user)
+  replies: Reply[];
 }
