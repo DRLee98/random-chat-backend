@@ -9,5 +9,6 @@ import { Reply } from './entities/reply.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Reply])],
   providers: [ReplyResolver, ReplyService],
+  exports: [ReplyService],
 })
 export class ReplyModule {}

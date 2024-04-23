@@ -1,14 +1,21 @@
 import { Test } from '@nestjs/testing';
 import { CommentService } from '../comment.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { MockRepository, mockRepository } from 'test/utils';
+import { MockRepository, MockService, mockRepository } from 'test/utils';
 import { CommonService } from 'src/common/common.service';
 import { mockComment, mockUser } from 'test/mockData';
 import { Comment } from '../entities/comment.entity';
+import { ReplyService } from 'src/reply/reply.service';
+
+const mockReplyService = () => ({
+  deleteRepliesByCommentId: jest.fn(),
+  deleteRepliesByCommentIds: jest.fn(),
+});
 
 describe('CommentService 테스트', () => {
   let commentService: CommentService;
   let commentRepository: MockRepository<Comment>;
+  let replyService: MockService<ReplyService>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -18,17 +25,23 @@ describe('CommentService 테스트', () => {
           provide: getRepositoryToken(Comment),
           useValue: mockRepository(),
         },
+        {
+          provide: ReplyService,
+          useValue: mockReplyService(),
+        },
         CommonService,
       ],
     }).compile();
 
     commentService = module.get<CommentService>(CommentService);
     commentRepository = module.get(getRepositoryToken(Comment));
+    replyService = module.get(ReplyService);
   });
 
   it('서비스 health check ', () => {
     expect(commentService).toBeDefined();
     expect(commentRepository).toBeDefined();
+    expect(replyService).toBeDefined();
   });
 
   it('댓글 조회 테스트', async () => {
@@ -103,7 +116,7 @@ describe('CommentService 테스트', () => {
       expect(commentRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
-    it('댓글 수정 성공', async () => {
+    it('댓글 수정', async () => {
       commentRepository.findOne.mockResolvedValue(mockComment);
 
       const result = await commentService.editComment(input, mockUser);
@@ -150,7 +163,7 @@ describe('CommentService 테스트', () => {
       expect(commentRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
-    it('댓글 삭제 성공', async () => {
+    it('댓글 삭제', async () => {
       commentRepository.findOne.mockResolvedValue(mockComment);
 
       const result = await commentService.deleteComment(input, mockUser);
@@ -161,6 +174,30 @@ describe('CommentService 테스트', () => {
       expect(commentRepository.findOne).toHaveBeenCalledTimes(1);
       expect(commentRepository.softDelete).toHaveBeenCalledTimes(1);
       expect(commentRepository.softDelete).toHaveBeenCalledWith(input.id);
+
+      expect(replyService.deleteRepliesByCommentId).toHaveBeenCalledTimes(1);
+      expect(replyService.deleteRepliesByCommentId).toHaveBeenCalledWith(
+        input.id,
+      );
+    });
+
+    it('게시글 삭제로 인한 댓글 삭제', async () => {
+      commentRepository.find.mockResolvedValue([mockComment]);
+
+      const result = await commentService.deleteCommentsByPostId('xx');
+
+      expect(result).toEqual(true);
+
+      expect(commentRepository.find).toHaveBeenCalledTimes(1);
+      expect(commentRepository.softDelete).toHaveBeenCalledTimes(1);
+      expect(commentRepository.softDelete).toHaveBeenCalledWith([
+        mockComment.id,
+      ]);
+
+      expect(replyService.deleteRepliesByCommentIds).toHaveBeenCalledTimes(1);
+      expect(replyService.deleteRepliesByCommentIds).toHaveBeenCalledWith([
+        mockComment.id,
+      ]);
     });
   });
 });

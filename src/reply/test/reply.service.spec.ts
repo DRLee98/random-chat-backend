@@ -5,6 +5,7 @@ import { Reply } from '../entities/reply.entity';
 import { Test } from '@nestjs/testing';
 import { CommonService } from 'src/common/common.service';
 import { mockReply, mockUser } from 'test/mockData';
+import { In } from 'typeorm';
 
 describe('ReplyService 테스트', () => {
   let replyService: ReplyService;
@@ -120,7 +121,7 @@ describe('ReplyService 테스트', () => {
       expect(replyRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
-    it('답글 수정 성공', async () => {
+    it('답글 수정', async () => {
       replyRepository.findOne.mockResolvedValue(mockReply);
 
       const result = await replyService.editReply(input, mockUser);
@@ -178,6 +179,32 @@ describe('ReplyService 테스트', () => {
       expect(replyRepository.findOne).toHaveBeenCalledTimes(1);
       expect(replyRepository.softDelete).toHaveBeenCalledTimes(1);
       expect(replyRepository.softDelete).toHaveBeenCalledWith(mockReply.id);
+    });
+
+    it('댓글 삭제로 인한 답글 삭제', async () => {
+      const result = await replyService.deleteRepliesByCommentId('xx');
+
+      expect(result).toEqual(true);
+
+      expect(replyRepository.softDelete).toHaveBeenCalledTimes(1);
+      expect(replyRepository.softDelete).toHaveBeenCalledWith({
+        comment: {
+          id: 'xx',
+        },
+      });
+    });
+
+    it('댓글 삭제로 인한 답글 삭제 (여러개)', async () => {
+      const result = await replyService.deleteRepliesByCommentIds(['xx']);
+
+      expect(result).toEqual(true);
+
+      expect(replyRepository.softDelete).toHaveBeenCalledTimes(1);
+      expect(replyRepository.softDelete).toHaveBeenCalledWith({
+        comment: {
+          id: In(['xx']),
+        },
+      });
     });
   });
 });

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { CommonService } from 'src/common/common.service';
 
 import { UploadFileOutput } from './dtos/upload-file.dto';
+import { UploadFilesOutput } from './dtos/upload-files.dto';
 
 import { Upload } from 'graphql-upload';
 import { streamToBuffer } from './utils';
@@ -48,6 +49,43 @@ export class AwsService {
       return {
         ok: true,
         url,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
+
+  async uploadFiles(
+    promiseFiles: Array<Upload['promise']>,
+    folder: string,
+  ): Promise<UploadFilesOutput> {
+    try {
+      const urls = await Promise.all(
+        promiseFiles.map(async (asyncFile) => {
+          const file = await asyncFile;
+          const stream = file.createReadStream();
+          const buffer = await streamToBuffer(stream);
+          const objectName = `${folder}/${file.filename}`;
+
+          await new AWS.S3()
+            .putObject({
+              Body: buffer,
+              Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
+              Key: objectName,
+              ACL: 'public-read',
+            })
+            .promise();
+
+          const encodeName = encodeURIComponent(objectName);
+          const url = `https://${this.configService.get('AWS_S3_BUCKET_NAME')}.s3.amazonaws.com/${encodeName}`;
+
+          return url;
+        }),
+      );
+
+      return {
+        ok: true,
+        urls,
       };
     } catch (error) {
       return this.commonService.error(error);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { CommonService } from 'src/common/common.service';
 
@@ -113,6 +113,11 @@ export class ReplyService {
   ): Promise<EditReplyOutput> {
     try {
       const reply = await this.replyRepository.findOne({
+        select: {
+          user: {
+            id: true,
+          },
+        },
         where: {
           id,
         },
@@ -143,6 +148,11 @@ export class ReplyService {
   ): Promise<DeleteReplyOutput> {
     try {
       const reply = await this.replyRepository.findOne({
+        select: {
+          user: {
+            id: true,
+          },
+        },
         where: {
           id,
         },
@@ -162,6 +172,34 @@ export class ReplyService {
       };
     } catch (error) {
       return this.commonService.error(error);
+    }
+  }
+
+  async deleteRepliesByCommentId(commentId: string): Promise<boolean> {
+    try {
+      await this.replyRepository.softDelete({
+        comment: {
+          id: commentId,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async deleteRepliesByCommentIds(commentId: string[]): Promise<boolean> {
+    try {
+      await this.replyRepository.softDelete({
+        comment: {
+          id: In(commentId),
+        },
+      });
+
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 }

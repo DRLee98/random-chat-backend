@@ -13,6 +13,7 @@ import { AwsModule } from './aws/aws.module';
 import { FcmModule } from './fcm/fcm.module';
 import { NoticeModule } from './notice/notice.module';
 import { NotificationModule } from './notification/notification.module';
+import { OpinionModule } from './opinion/opinion.module';
 import { CommentModule } from './comment/comment.module';
 import { ReplyModule } from './reply/reply.module';
 
@@ -22,6 +23,7 @@ import { UserRoom } from './room/entities/user-room.entity';
 import { Message } from './message/entities/message.entity';
 import { Notice } from './notice/entities/notice.entity';
 import { Notification } from './notification/entities/notification.entity';
+import { Opinion } from './opinion/entities/opinion.entity';
 import { Comment } from './comment/entities/comment.entity';
 import { Reply } from './reply/entities/reply.entity';
 
@@ -48,6 +50,7 @@ import { Reply } from './reply/entities/reply.entity';
         Message,
         Notice,
         Notification,
+        Opinion,
         Comment,
         Reply,
       ],
@@ -67,6 +70,7 @@ import { Reply } from './reply/entities/reply.entity';
     NotificationModule,
     ReplyModule,
     CommentModule,
+    OpinionModule,
     UserModule,
     AuthModule,
     RoomModule,

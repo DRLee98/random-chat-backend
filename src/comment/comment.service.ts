@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { ReplyService } from 'src/reply/reply.service';
 import { CommonService } from 'src/common/common.service';
 
 import { Comment } from './entities/comment.entity';
@@ -26,6 +27,7 @@ export class CommentService {
   constructor(
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
+    private readonly replyService: ReplyService,
     private readonly commonService: CommonService,
   ) {}
 
@@ -98,6 +100,11 @@ export class CommentService {
   ): Promise<EditCommentOutput> {
     try {
       const comment = await this.commentRepository.findOne({
+        select: {
+          user: {
+            id: true,
+          },
+        },
         where: {
           id,
         },
@@ -129,6 +136,11 @@ export class CommentService {
   ): Promise<DeleteCommentOutput> {
     try {
       const comment = await this.commentRepository.findOne({
+        select: {
+          user: {
+            id: true,
+          },
+        },
         where: {
           id,
         },
@@ -142,6 +154,7 @@ export class CommentService {
       if (comment.user.id !== user.id)
         return this.commonService.error('댓글을 수정할 권한이 없습니다.');
 
+      this.replyService.deleteRepliesByCommentId(id);
       await this.commentRepository.softDelete(id);
 
       return {
@@ -149,6 +162,27 @@ export class CommentService {
       };
     } catch (error) {
       return this.commonService.error(error);
+    }
+  }
+
+  async deleteCommentsByPostId(postId: string): Promise<boolean> {
+    try {
+      const comments = await this.commentRepository.find({
+        where: {
+          postId,
+        },
+      });
+
+      const commentIds = comments.map((comment) => comment.id);
+
+      if (commentIds.length > 0) {
+        this.replyService.deleteRepliesByCommentIds(commentIds);
+        await this.commentRepository.softDelete(commentIds);
+      }
+
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 }

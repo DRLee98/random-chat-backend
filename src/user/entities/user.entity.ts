@@ -12,6 +12,7 @@ import { UserRoom } from 'src/room/entities/user-room.entity';
 import { Notification } from 'src/notification/entities/notification.entity';
 import { Comment } from 'src/comment/entities/comment.entity';
 import { Reply } from 'src/reply/entities/reply.entity';
+import { Opinion } from 'src/opinion/entities/opinion.entity';
 
 export enum Language {
   ko = 'ko', // 한국어
@@ -106,4 +107,8 @@ export class User extends CoreEntity {
   @Field(() => [Reply])
   @OneToMany(() => Reply, (reply) => reply.user)
   replies: Reply[];
+
+  @Field(() => [Opinion])
+  @OneToMany(() => Opinion, (opinion) => opinion.user)
+  opinions: Opinion[];
 }

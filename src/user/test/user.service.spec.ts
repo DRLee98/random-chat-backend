@@ -12,7 +12,7 @@ import { UpdateUserInput } from '../dtos/update-user.dto';
 import { ToggleBlockUserInput } from '../dtos/toggle-block-user.dto';
 import { UserProfileInput } from '../dtos/user-profile.dto';
 import * as utilFn from '../utils';
-import { mockProfile, mockUser } from 'test/mockData';
+import { mockImage, mockUser } from 'test/mockData';
 
 const uploadFileUrl = 'file url';
 
@@ -320,7 +320,7 @@ describe('UserService 테스트', () => {
 
       const inputWithProfile = {
         ...input,
-        profile: mockProfile,
+        profile: mockImage,
       };
 
       const inputWithProfileUrl = {
@@ -349,7 +349,7 @@ describe('UserService 테스트', () => {
 
       expect(awsService.uploadFile).toHaveBeenCalledTimes(1);
       expect(awsService.uploadFile).toHaveBeenCalledWith(
-        mockProfile,
+        mockImage,
         getProfilePath(mockUser.socialId),
       );
     });
@@ -359,7 +359,7 @@ describe('UserService 테스트', () => {
 
       const inputWithProfile = {
         ...input,
-        profile: mockProfile,
+        profile: mockImage,
       };
 
       const inputWithProfileUrl = {
@@ -387,7 +387,7 @@ describe('UserService 테스트', () => {
 
       expect(awsService.uploadFile).toHaveBeenCalledTimes(1);
       expect(awsService.uploadFile).toHaveBeenCalledWith(
-        mockProfile,
+        mockImage,
         getProfilePath(mockUser.socialId),
       );
     });

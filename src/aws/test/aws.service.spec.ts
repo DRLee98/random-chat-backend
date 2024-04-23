@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { CommonService } from 'src/common/common.service';
 import * as utils from '../utils';
 import * as AWS from 'aws-sdk';
-import { mockProfile } from 'test/mockData';
+import { mockImage } from 'test/mockData';
 
 const testRegion = 'region';
 const testAccessKey = 'accessKey';
@@ -66,7 +66,7 @@ describe('AwsService 테스트', () => {
   });
 
   it('파일 업로드 테스트', async () => {
-    const filename = (await mockProfile).filename;
+    const filename = (await mockImage).filename;
     const folder = 'test-folder';
     const objectName = `${folder}/${filename}`;
     const buffer = Buffer.from('test');
@@ -78,7 +78,7 @@ describe('AwsService 테스트', () => {
       })),
     });
 
-    const result = await awsService.uploadFile(mockProfile, folder);
+    const result = await awsService.uploadFile(mockImage, folder);
 
     expect(result.ok).toEqual(true);
     expect(result.error).toEqual(undefined);
