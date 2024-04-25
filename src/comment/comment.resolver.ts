@@ -10,6 +10,10 @@ import {
   ViewCommentsOutput,
 } from './dtos/view-comments.dto';
 import {
+  CommentCountInput,
+  CommentCountOutput,
+} from './dtos/comment-count.dto';
+import {
   CreateCommentInput,
   CreateCommentOutput,
 } from './dtos/create-comment.dto';
@@ -22,6 +26,13 @@ import {
 @Resolver()
 export class CommentResolver {
   constructor(private readonly commentService: CommentService) {}
+
+  @Query(() => CommentCountOutput)
+  async commentCount(
+    @Args('input') input: CommentCountInput,
+  ): Promise<CommentCountOutput> {
+    return this.commentService.commentCount(input);
+  }
 
   @Query(() => ViewCommentsOutput)
   async viewComments(

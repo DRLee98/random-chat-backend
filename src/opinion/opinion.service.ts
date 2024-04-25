@@ -49,6 +49,9 @@ export class OpinionService {
           status: true,
           createdAt: true,
           updatedAt: true,
+          user: {
+            id: true,
+          },
         },
         where: {
           user: {
@@ -57,6 +60,9 @@ export class OpinionService {
         },
         order: {
           createdAt: 'DESC',
+        },
+        relations: {
+          user: true,
         },
         ...this.commonService.paginationOption(input),
       });

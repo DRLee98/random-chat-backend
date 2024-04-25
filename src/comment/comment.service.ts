@@ -13,6 +13,10 @@ import {
   ViewCommentsOutput,
 } from './dtos/view-comments.dto';
 import {
+  CommentCountInput,
+  CommentCountOutput,
+} from './dtos/comment-count.dto';
+import {
   CreateCommentInput,
   CreateCommentOutput,
 } from './dtos/create-comment.dto';
@@ -30,6 +34,25 @@ export class CommentService {
     private readonly replyService: ReplyService,
     private readonly commonService: CommonService,
   ) {}
+
+  async commentCount({
+    postId,
+  }: CommentCountInput): Promise<CommentCountOutput> {
+    try {
+      const count = await this.commentRepository.count({
+        where: {
+          postId,
+        },
+      });
+
+      return {
+        ok: true,
+        count,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
 
   async viewComments({
     postId,

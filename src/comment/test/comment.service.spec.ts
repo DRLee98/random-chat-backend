@@ -44,6 +44,22 @@ describe('CommentService 테스트', () => {
     expect(replyService).toBeDefined();
   });
 
+  it('댓글 카운트 테스트', async () => {
+    const input = {
+      postId: '1',
+    };
+
+    commentRepository.count.mockResolvedValue(1);
+
+    const result = await commentService.commentCount(input);
+
+    expect(result.ok).toEqual(true);
+    expect(result.error).toEqual(undefined);
+    expect(result.count).toEqual(1);
+
+    expect(commentRepository.count).toHaveBeenCalledTimes(1);
+  });
+
   it('댓글 조회 테스트', async () => {
     const input = {
       postId: '1',
