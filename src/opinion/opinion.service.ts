@@ -213,8 +213,16 @@ export class OpinionService {
   ): Promise<DeleteOpinionOutput> {
     try {
       const opinion = await this.opinionRepository.findOne({
+        select: {
+          user: {
+            id: true,
+          },
+        },
         where: {
           id: input.id,
+        },
+        relations: {
+          user: true,
         },
       });
 
