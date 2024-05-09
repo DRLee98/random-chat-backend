@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -26,6 +26,10 @@ import {
   DeleteCommentOutput,
 } from './dtos/delete-comment.dto';
 
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/common/common.constants';
+import { NEW_COMMNET } from './comment.constants';
+
 @Injectable()
 export class CommentService {
   constructor(
@@ -33,6 +37,7 @@ export class CommentService {
     private readonly commentRepository: Repository<Comment>,
     private readonly replyService: ReplyService,
     private readonly commonService: CommonService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   async commentCount({
@@ -107,6 +112,10 @@ export class CommentService {
       });
 
       await this.commentRepository.save(comment);
+
+      this.pubSub.publish(NEW_COMMNET, {
+        newComment: comment,
+      });
 
       return {
         ok: true,

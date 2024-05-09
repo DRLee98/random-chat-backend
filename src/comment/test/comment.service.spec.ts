@@ -6,10 +6,15 @@ import { CommonService } from 'src/common/common.service';
 import { mockComment, mockUser } from 'test/mockData';
 import { Comment } from '../entities/comment.entity';
 import { ReplyService } from 'src/reply/reply.service';
+import { PUB_SUB } from 'src/common/common.constants';
 
 const mockReplyService = () => ({
   deleteRepliesByCommentId: jest.fn(),
   deleteRepliesByCommentIds: jest.fn(),
+});
+
+const mockPubSub = () => ({
+  publish: jest.fn(),
 });
 
 describe('CommentService 테스트', () => {
@@ -30,6 +35,7 @@ describe('CommentService 테스트', () => {
           useValue: mockReplyService(),
         },
         CommonService,
+        { provide: PUB_SUB, useValue: mockPubSub() },
       ],
     }).compile();
 

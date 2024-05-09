@@ -1,8 +1,10 @@
-import { Args, Resolver, Query, Mutation } from '@nestjs/graphql';
+import { Inject } from '@nestjs/common';
+import { Args, Resolver, Query, Mutation, Subscription } from '@nestjs/graphql';
 
 import { CommentService } from './comment.service';
 
 import { User } from 'src/user/entities/user.entity';
+import { Comment } from './entities/comment.entity';
 import { LoggedInUser } from 'src/user/user.decorator';
 
 import {
@@ -22,10 +24,18 @@ import {
   DeleteCommentInput,
   DeleteCommentOutput,
 } from './dtos/delete-comment.dto';
+import { NewCommentInput } from './dtos/new-comment.dto';
+
+import { PUB_SUB } from 'src/common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
+import { NEW_COMMNET } from './comment.constants';
 
 @Resolver()
 export class CommentResolver {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    private readonly commentService: CommentService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   @Query(() => CommentCountOutput)
   async commentCount(
@@ -63,5 +73,20 @@ export class CommentResolver {
     @LoggedInUser() user: User,
   ): Promise<DeleteCommentOutput> {
     return this.commentService.deleteComment(input, user);
+  }
+
+  @Subscription(() => Comment, {
+    filter(payload, variables, context) {
+      return (
+        payload.newComment.postId === variables.input.postId &&
+        payload.newComment.user.id !== context.user.id
+      );
+    },
+    resolve(payload) {
+      return payload.newComment;
+    },
+  })
+  newComment(@Args('input') _: NewCommentInput) {
+    return this.pubSub.asyncIterator(NEW_COMMNET);
   }
 }
