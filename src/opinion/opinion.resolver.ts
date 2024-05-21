@@ -19,6 +19,10 @@ import {
   DeleteOpinionInput,
   DeleteOpinionOutput,
 } from './dtos/delete-opinion.dto';
+import {
+  UpdateOpinionStatusInput,
+  UpdateOpinionStatusOutput,
+} from './dtos/update-opinion-status';
 
 @Resolver()
 export class OpinionResolver {
@@ -62,5 +66,12 @@ export class OpinionResolver {
     @LoggedInUser() user: User,
   ): Promise<DeleteOpinionOutput> {
     return this.opinionService.deleteOpinion(input, user);
+  }
+
+  @Mutation(() => UpdateOpinionStatusOutput)
+  updateOpinionStatus(
+    @Args('input') input: UpdateOpinionStatusInput,
+  ): Promise<UpdateOpinionStatusOutput> {
+    return this.opinionService.updateOpinionStatus(input);
   }
 }

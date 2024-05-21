@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { ConfigService } from '@nestjs/config';
 import { AwsService } from 'src/aws/aws.service';
 import { CommonService } from 'src/common/common.service';
 import { CommentService } from 'src/comment/comment.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 import { Opinion, OpinionStatus } from './entities/opinion.entity';
 import { User } from 'src/user/entities/user.entity';
+import { NotificationType } from 'src/notification/entities/notification.entity';
 
 import { MyOpinionsInput, MyOpinionsOutput } from './dtos/my-opinions.dto';
 import {
@@ -23,6 +26,10 @@ import {
   DeleteOpinionInput,
   DeleteOpinionOutput,
 } from './dtos/delete-opinion.dto';
+import {
+  UpdateOpinionStatusInput,
+  UpdateOpinionStatusOutput,
+} from './dtos/update-opinion-status';
 
 import { getOpinionPath } from 'src/user/utils';
 
@@ -33,7 +40,9 @@ export class OpinionService {
     private readonly opinionRepository: Repository<Opinion>,
     private readonly awsService: AwsService,
     private readonly commentService: CommentService,
+    private readonly notificationService: NotificationService,
     private readonly commonService: CommonService,
+    private readonly configService: ConfigService,
   ) {}
 
   async myOpinions(
@@ -240,6 +249,72 @@ export class OpinionService {
 
       this.commentService.deleteCommentsByPostId(opinion.id);
       await this.opinionRepository.softDelete(opinion.id);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
+
+  async updateOpinionStatus({
+    password,
+    id,
+    status,
+  }: UpdateOpinionStatusInput): Promise<UpdateOpinionStatusOutput> {
+    try {
+      if (!password)
+        return this.commonService.error(
+          '의견을 수정하기 위한 비밀번호를 입력해 주세요',
+        );
+      if (password !== this.configService.get('PASSWORD'))
+        return this.commonService.error('비밀번호가 맞지 않습니다');
+
+      const opinion = await this.opinionRepository.findOne({
+        where: {
+          id,
+        },
+        relations: {
+          user: true,
+        },
+      });
+
+      if (!opinion) {
+        return this.commonService.error('존재하지 않는 의견입니다.');
+      }
+
+      await this.opinionRepository.update(id, {
+        status,
+      });
+
+      if (status === OpinionStatus.READ) {
+        this.notificationService.createNotification(
+          {
+            title: '작성해주신 의견을 확인중입니다.',
+            message: `${opinion.title} 의견을 확인하고 있습니다!`,
+            type: NotificationType.SYSTEM,
+            data: {
+              opinionId: opinion.id,
+            },
+          },
+          opinion.user,
+        );
+      }
+
+      if (status === OpinionStatus.ANSWERED) {
+        this.notificationService.createNotification(
+          {
+            title: '작성해주신 의견 답변이 작성되었습니다.',
+            message: `${opinion.title} 의견에 대한 답변이 작성되었습니다!`,
+            type: NotificationType.SYSTEM,
+            data: {
+              opinionId: opinion.id,
+            },
+          },
+          opinion.user,
+        );
+      }
 
       return {
         ok: true,

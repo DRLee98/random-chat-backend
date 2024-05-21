@@ -11,6 +11,8 @@ import { AwsService } from 'src/aws/aws.service';
 import { CommentService } from 'src/comment/comment.service';
 import { CommonService } from 'src/common/common.service';
 import { mockImage, mockOpinion, mockUser } from 'test/mockData';
+import { NotificationService } from 'src/notification/notification.service';
+import { ConfigService } from '@nestjs/config';
 
 const mockAwsService = () => ({
   uploadFiles: jest.fn(),
@@ -20,11 +22,26 @@ const mockCommentService = () => ({
   deleteCommentsByPostId: jest.fn(),
 });
 
+const mockNotificationService = () => ({
+  createNotification: jest.fn(),
+});
+
+const env = {
+  PASSWORD: 'password',
+};
+
+const mockConfigService = () => {
+  return {
+    get: (key: string) => env[key],
+  };
+};
+
 describe('OpinionService', () => {
   let opinionService: OpinionService;
   let opinionRepository: MockRepository<Opinion>;
   let awsService: MockService<AwsService>;
   let commentService: MockService<CommentService>;
+  let notificationService: MockService<NotificationService>;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -42,7 +59,15 @@ describe('OpinionService', () => {
           provide: CommentService,
           useValue: mockCommentService(),
         },
+        {
+          provide: NotificationService,
+          useValue: mockNotificationService(),
+        },
         CommonService,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService(),
+        },
       ],
     }).compile();
 
@@ -50,6 +75,7 @@ describe('OpinionService', () => {
     opinionRepository = module.get(getRepositoryToken(Opinion));
     awsService = module.get(AwsService);
     commentService = module.get(CommentService);
+    notificationService = module.get(NotificationService);
   });
 
   it('서비스 health check', () => {
@@ -57,6 +83,7 @@ describe('OpinionService', () => {
     expect(opinionRepository).toBeDefined();
     expect(awsService).toBeDefined();
     expect(commentService).toBeDefined();
+    expect(notificationService).toBeDefined();
   });
 
   describe('의견 상세 조회 테스트', () => {
@@ -361,6 +388,66 @@ describe('OpinionService', () => {
       expect(commentService.deleteCommentsByPostId).toHaveBeenCalledWith(
         input.id,
       );
+    });
+  });
+
+  describe('의견 상태 변경 테스트', () => {
+    const input = {
+      id: mockOpinion.id,
+      status: OpinionStatus.READ,
+    };
+
+    it('비밀번호가 공백일 경우', async () => {
+      const result = await opinionService.updateOpinionStatus({
+        password: '',
+        ...input,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
+    it('비밀번호가 틀렸을 경우', async () => {
+      const result = await opinionService.updateOpinionStatus({
+        password: 'xx',
+        ...input,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
+    it('의견이 없을 경우', async () => {
+      opinionRepository.findOne.mockResolvedValue(null);
+
+      const result = await opinionService.updateOpinionStatus({
+        password: env.PASSWORD,
+        ...input,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+
+      expect(opinionRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('의견 상태 변경', async () => {
+      opinionRepository.findOne.mockResolvedValue(mockOpinion);
+
+      const result = await opinionService.updateOpinionStatus({
+        password: env.PASSWORD,
+        ...input,
+      });
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+
+      expect(opinionRepository.update).toHaveBeenCalledTimes(1);
+      expect(opinionRepository.update).toHaveBeenCalledWith(input.id, {
+        status: input.status,
+      });
+
+      expect(notificationService.createNotification).toHaveBeenCalledTimes(1);
     });
   });
 });

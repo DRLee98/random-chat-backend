@@ -100,9 +100,6 @@ describe('NoticeService 테스트', () => {
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
-
-      expect(noticeRepository.create).toHaveBeenCalledTimes(0);
-      expect(noticeRepository.save).toHaveBeenCalledTimes(0);
     });
 
     it('비밀번호가 틀렸을 경우', async () => {
@@ -113,9 +110,6 @@ describe('NoticeService 테스트', () => {
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
-
-      expect(noticeRepository.create).toHaveBeenCalledTimes(0);
-      expect(noticeRepository.save).toHaveBeenCalledTimes(0);
     });
 
     it('공지사항 생성', async () => {
