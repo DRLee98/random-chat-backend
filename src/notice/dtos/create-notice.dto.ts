@@ -8,7 +8,10 @@ export class CreateNoticeInput extends PickType(Notice, [
   'content',
   'pinned',
   'category',
-]) {}
+]) {
+  @Field(() => String)
+  password: string;
+}
 
 @ObjectType()
 export class CreateNoticeOutput extends CoreOutput {

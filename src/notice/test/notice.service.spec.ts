@@ -5,6 +5,17 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { MockRepository, mockRepository } from 'test/utils';
 import { Notice } from '../entities/notice.entity';
 import { mockNotice } from 'test/mockData';
+import { ConfigService } from '@nestjs/config';
+
+const env = {
+  PASSWORD: 'password',
+};
+
+const mockConfigService = () => {
+  return {
+    get: (key: string) => env[key],
+  };
+};
 
 describe('NoticeService 테스트', () => {
   let noticeService: NoticeService;
@@ -19,6 +30,10 @@ describe('NoticeService 테스트', () => {
           useValue: mockRepository(),
         },
         CommonService,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService(),
+        },
       ],
     }).compile();
 
@@ -69,30 +84,91 @@ describe('NoticeService 테스트', () => {
     });
   });
 
-  it('공지사항 생성 테스트', async () => {
-    noticeRepository.create.mockReturnValue(mockNotice);
-    noticeRepository.save.mockResolvedValue(mockNotice);
-
-    const result = await noticeService.createNotice({
+  describe('공지사항 생성 테스트', () => {
+    const input = {
       title: mockNotice.title,
       content: mockNotice.content,
       pinned: mockNotice.pinned,
       category: mockNotice.category,
+    };
+
+    it('비밀번호가 공백일 경우', async () => {
+      const result = await noticeService.createNotice({
+        password: '',
+        ...input,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+
+      expect(noticeRepository.create).toHaveBeenCalledTimes(0);
+      expect(noticeRepository.save).toHaveBeenCalledTimes(0);
     });
 
-    expect(result.ok).toEqual(true);
-    expect(result.error).toEqual(undefined);
-    expect(result.notice).toEqual(mockNotice);
+    it('비밀번호가 틀렸을 경우', async () => {
+      const result = await noticeService.createNotice({
+        password: 'xx',
+        ...input,
+      });
 
-    expect(noticeRepository.create).toHaveBeenCalledTimes(1);
-    expect(noticeRepository.save).toHaveBeenCalledTimes(1);
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+
+      expect(noticeRepository.create).toHaveBeenCalledTimes(0);
+      expect(noticeRepository.save).toHaveBeenCalledTimes(0);
+    });
+
+    it('공지사항 생성', async () => {
+      noticeRepository.create.mockReturnValue(mockNotice);
+      noticeRepository.save.mockResolvedValue(mockNotice);
+
+      const result = await noticeService.createNotice({
+        password: env.PASSWORD,
+        ...input,
+      });
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+      expect(result.notice).toEqual(mockNotice);
+
+      expect(noticeRepository.create).toHaveBeenCalledTimes(1);
+      expect(noticeRepository.save).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('공지사항 수정 테스트', () => {
+    const input = {
+      id: mockNotice.id,
+      title: 'update title',
+    };
+
+    it('비밀번호가 공백일 경우', async () => {
+      const result = await noticeService.editNotice({
+        password: '',
+        ...input,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
+    it('비밀번호가 틀렸을 경우', async () => {
+      const result = await noticeService.editNotice({
+        password: 'xx',
+        ...input,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
     it('존재하지 않는 공지사항인 경우', async () => {
       noticeRepository.findOne.mockResolvedValue(null);
 
-      const result = await noticeService.editNotice({ id: 'xx' });
+      const result = await noticeService.editNotice({
+        password: env.PASSWORD,
+        id: 'xx',
+      });
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -101,32 +177,54 @@ describe('NoticeService 테스트', () => {
     });
 
     it('공지사항 수정', async () => {
-      const updateTitle = 'update title';
       noticeRepository.findOne.mockResolvedValue(mockNotice);
 
       const result = await noticeService.editNotice({
-        id: mockNotice.id,
-        title: updateTitle,
+        password: env.PASSWORD,
+        ...input,
       });
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);
-      expect(result.notice).toEqual({ ...mockNotice, title: updateTitle });
+      expect(result.notice).toEqual({ ...mockNotice, title: input.title });
 
       expect(noticeRepository.findOne).toHaveBeenCalledTimes(1);
       expect(noticeRepository.update).toHaveBeenCalledTimes(1);
       expect(noticeRepository.update).toHaveBeenCalledWith(
         { id: mockNotice.id },
-        { title: updateTitle },
+        { title: input.title },
       );
     });
   });
 
   describe('공지사항 삭제 테스트', () => {
+    it('비밀번호가 공백일 경우', async () => {
+      const result = await noticeService.deleteNotice({
+        password: '',
+        id: mockNotice.id,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
+    it('비밀번호가 틀렸을 경우', async () => {
+      const result = await noticeService.deleteNotice({
+        password: 'xx',
+        id: mockNotice.id,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
     it('존재하지 않는 공지사항인 경우', async () => {
       noticeRepository.findOne.mockResolvedValue(null);
 
-      const result = await noticeService.deleteNotice({ id: 'xx' });
+      const result = await noticeService.deleteNotice({
+        password: env.PASSWORD,
+        id: 'xx',
+      });
 
       expect(result.ok).toEqual(false);
       expect(typeof result.error).toBe('string');
@@ -137,7 +235,10 @@ describe('NoticeService 테스트', () => {
     it('공지사항 삭제', async () => {
       noticeRepository.findOne.mockResolvedValue(mockNotice);
 
-      const result = await noticeService.deleteNotice({ id: mockNotice.id });
+      const result = await noticeService.deleteNotice({
+        password: env.PASSWORD,
+        id: mockNotice.id,
+      });
 
       expect(result.ok).toEqual(true);
       expect(result.error).toEqual(undefined);

@@ -15,6 +15,9 @@ export class EditNoticeInput extends PartialType(
 ) {
   @Field(() => ID)
   id: string;
+
+  @Field(() => String)
+  password: string;
 }
 
 @ObjectType()

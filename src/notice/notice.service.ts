@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { ConfigService } from '@nestjs/config';
 import { CommonService } from 'src/common/common.service';
 
 import { Notice } from './entities/notice.entity';
@@ -24,6 +25,7 @@ export class NoticeService {
     @InjectRepository(Notice)
     private readonly noticeRepository: Repository<Notice>,
     private readonly commonService: CommonService,
+    private readonly configService: ConfigService,
   ) {}
   async noticeList({
     category,
@@ -74,8 +76,18 @@ export class NoticeService {
     }
   }
 
-  async createNotice(input: CreateNoticeInput): Promise<CreateNoticeOutput> {
+  async createNotice({
+    password,
+    ...input
+  }: CreateNoticeInput): Promise<CreateNoticeOutput> {
     try {
+      if (!password)
+        return this.commonService.error(
+          '공지를 등록하기 위한 비밀번호를 입력해 주세요',
+        );
+      if (password !== this.configService.get('PASSWORD'))
+        return this.commonService.error('비밀번호가 맞지 않습니다');
+
       const notice = this.noticeRepository.create(input);
 
       await this.noticeRepository.save(notice);
@@ -90,10 +102,18 @@ export class NoticeService {
   }
 
   async editNotice({
+    password,
     id,
     ...data
   }: EditNoticeInput): Promise<EditNoticeOutput> {
     try {
+      if (!password)
+        return this.commonService.error(
+          '공지를 수정하기 위한 비밀번호를 입력해 주세요',
+        );
+      if (password !== this.configService.get('PASSWORD'))
+        return this.commonService.error('비밀번호가 맞지 않습니다');
+
       const findNotice = await this.noticeRepository.findOne({ where: { id } });
       if (!findNotice) {
         return this.commonService.error('존재하지 않는 공지사항입니다.');
@@ -113,8 +133,18 @@ export class NoticeService {
     }
   }
 
-  async deleteNotice({ id }: DeleteNoticeInput): Promise<DeleteNoticeOutput> {
+  async deleteNotice({
+    password,
+    id,
+  }: DeleteNoticeInput): Promise<DeleteNoticeOutput> {
     try {
+      if (!password)
+        return this.commonService.error(
+          '공지를 삭제하기 위한 비밀번호를 입력해 주세요',
+        );
+      if (password !== this.configService.get('PASSWORD'))
+        return this.commonService.error('비밀번호가 맞지 않습니다');
+
       const findNotice = await this.noticeRepository.findOne({ where: { id } });
       if (!findNotice) {
         return this.commonService.error('존재하지 않는 공지사항입니다.');
