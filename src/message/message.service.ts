@@ -272,6 +272,7 @@ export class MessageService {
             data: { roomId },
           },
           user,
+          true,
         );
       }
     });

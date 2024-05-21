@@ -388,6 +388,7 @@ describe('MessageService 테스트', () => {
           data: { roomId },
         },
         mockUser,
+        true,
       );
     });
 
@@ -415,6 +416,7 @@ describe('MessageService 테스트', () => {
             data: { roomId },
           },
           user,
+          true,
         );
       });
     });
@@ -448,6 +450,7 @@ describe('MessageService 테스트', () => {
             data: { roomId },
           },
           user,
+          true,
         );
       });
     });

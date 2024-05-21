@@ -293,7 +293,7 @@ export class OpinionService {
           {
             title: '작성해주신 의견을 확인중입니다.',
             message: `${opinion.title} 의견을 확인하고 있습니다!`,
-            type: NotificationType.SYSTEM,
+            type: NotificationType.OPINION,
             data: {
               opinionId: opinion.id,
             },
@@ -307,7 +307,7 @@ export class OpinionService {
           {
             title: '작성해주신 의견 답변이 작성되었습니다.',
             message: `${opinion.title} 의견에 대한 답변이 작성되었습니다!`,
-            type: NotificationType.SYSTEM,
+            type: NotificationType.OPINION,
             data: {
               opinionId: opinion.id,
             },

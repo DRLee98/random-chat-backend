@@ -104,15 +104,9 @@ export class NotificationService {
   createNotification = async (
     input: CreateNotificationInput,
     user: User,
+    onlyPush?: boolean,
   ): Promise<CreateNotificationOutput> => {
     try {
-      const notification = this.notificationRepository.create({
-        ...input,
-        user,
-      });
-
-      await this.notificationRepository.save(notification);
-
       if (user.fcmToken) {
         this.fcmService.pushMessage({
           token: user.fcmToken,
@@ -123,13 +117,26 @@ export class NotificationService {
         });
       }
 
-      this.pubSub.publish(NEW_NOTIFICATION, {
-        newNotification: notification,
-      });
+      if (!onlyPush) {
+        const notification = this.notificationRepository.create({
+          ...input,
+          user,
+        });
+
+        await this.notificationRepository.save(notification);
+
+        this.pubSub.publish(NEW_NOTIFICATION, {
+          newNotification: notification,
+        });
+
+        return {
+          ok: true,
+          notification,
+        };
+      }
 
       return {
         ok: true,
-        notification,
       };
     } catch (error) {
       return this.commonService.error(error);
