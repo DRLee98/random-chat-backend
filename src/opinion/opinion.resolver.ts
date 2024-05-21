@@ -24,6 +24,8 @@ import {
   UpdateOpinionStatusOutput,
 } from './dtos/update-opinion-status';
 
+import { Public } from 'src/auth/auth.decorator';
+
 @Resolver()
 export class OpinionResolver {
   constructor(private readonly opinionService: OpinionService) {}
@@ -68,6 +70,7 @@ export class OpinionResolver {
     return this.opinionService.deleteOpinion(input, user);
   }
 
+  @Public()
   @Mutation(() => UpdateOpinionStatusOutput)
   updateOpinionStatus(
     @Args('input') input: UpdateOpinionStatusInput,

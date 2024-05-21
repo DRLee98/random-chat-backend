@@ -14,10 +14,13 @@ import {
   DeleteNoticeOutput,
 } from './dtos/delete-notice.dto';
 
+import { Public } from 'src/auth/auth.decorator';
+
 @Resolver()
 export class NoticeResolver {
   constructor(private readonly noticeService: NoticeService) {}
 
+  @Public()
   @Query(() => NoticeListOutput)
   async noticeList(
     @Args('input') input: NoticeListInput,
@@ -25,11 +28,13 @@ export class NoticeResolver {
     return this.noticeService.noticeList(input);
   }
 
+  @Public()
   @Query(() => NoticeOutput)
   async notice(@Args('input') input: NoticeInput): Promise<NoticeOutput> {
     return this.noticeService.notice(input);
   }
 
+  @Public()
   @Mutation(() => CreateNoticeOutput)
   async createNotice(
     @Args('input') input: CreateNoticeInput,
@@ -37,6 +42,7 @@ export class NoticeResolver {
     return this.noticeService.createNotice(input);
   }
 
+  @Public()
   @Mutation(() => EditNoticeOutput)
   async editNotice(
     @Args('input') input: EditNoticeInput,
@@ -44,6 +50,7 @@ export class NoticeResolver {
     return this.noticeService.editNotice(input);
   }
 
+  @Public()
   @Mutation(() => DeleteNoticeOutput)
   async deleteNotice(
     @Args('input') input: DeleteNoticeInput,
