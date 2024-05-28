@@ -295,7 +295,7 @@ export class OpinionService {
             message: `${opinion.title} 의견을 확인하고 있습니다!`,
             type: NotificationType.OPINION,
             data: {
-              opinionId: opinion.id,
+              opinionId: opinion.id + '',
             },
           },
           opinion.user,
@@ -309,7 +309,7 @@ export class OpinionService {
             message: `${opinion.title} 의견에 대한 답변이 작성되었습니다!`,
             type: NotificationType.OPINION,
             data: {
-              opinionId: opinion.id,
+              opinionId: opinion.id + '',
             },
           },
           opinion.user,
