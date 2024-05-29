@@ -31,7 +31,7 @@ import { Reply } from './reply/entities/reply.entity';
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env',
-      ignoreEnvFile: process.env.NODE_ENV === 'prod',
+      // ignoreEnvFile: process.env.NODE_ENV === 'prod',
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
@@ -58,6 +58,7 @@ import { Reply } from './reply/entities/reply.entity';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
+      playground: process.env.NODE_ENV !== 'prod',
       subscriptions: {
         'subscriptions-transport-ws': {
           onConnect: (connectionParams: any) => connectionParams,
