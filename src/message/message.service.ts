@@ -69,6 +69,8 @@ export class MessageService {
             id: true,
             nickname: true,
             profileUrl: true,
+            profileBgColor: true,
+            profileTextColor: true,
           },
         },
         where: {

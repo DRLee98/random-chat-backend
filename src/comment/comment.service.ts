@@ -70,6 +70,8 @@ export class CommentService {
             id: true,
             nickname: true,
             profileUrl: true,
+            profileBgColor: true,
+            profileTextColor: true,
           },
         },
         where: {
