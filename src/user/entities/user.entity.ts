@@ -44,7 +44,7 @@ registerEnumType(SocialPlatform, { name: 'SocialPlatform' });
 @Entity()
 export class User extends CoreEntity {
   @Field(() => String)
-  @Column({ unique: true })
+  @Column()
   socialId: string;
 
   @Field(() => SocialPlatform)

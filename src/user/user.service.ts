@@ -135,6 +135,8 @@ export class UserService {
             nickname: true,
             bio: true,
             profileUrl: true,
+            profileBgColor: true,
+            profileTextColor: true,
           },
         },
         where: { id: loginUser.id },
@@ -181,6 +183,8 @@ export class UserService {
           id: true,
           nickname: true,
           profileUrl: true,
+          profileBgColor: true,
+          profileTextColor: true,
         },
         where: { id: user.id },
         relations: {
@@ -211,6 +215,8 @@ export class UserService {
             nickname: true,
             bio: true,
             profileUrl: true,
+            profileBgColor: true,
+            profileTextColor: true,
           },
         },
         where: {
