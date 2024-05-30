@@ -10,6 +10,8 @@ export class CreateUserInput extends PickType(User, [
   'socialPlatform',
   'fcmToken',
   'nickname',
+  'profileBgColor',
+  'profileTextColor',
 ]) {
   @Field(() => String, { nullable: true })
   bio?: string;

@@ -67,6 +67,14 @@ export class User extends CoreEntity {
   @Column({ nullable: true })
   profileUrl?: string;
 
+  @Field(() => String)
+  @Column()
+  profileBgColor: string;
+
+  @Field(() => String)
+  @Column()
+  profileTextColor: string;
+
   @Field(() => Boolean)
   @Column({ default: true })
   noti: boolean;

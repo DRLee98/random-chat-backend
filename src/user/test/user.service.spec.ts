@@ -57,6 +57,8 @@ describe('UserService 테스트', () => {
       socialPlatform: mockUser.socialPlatform,
       fcmToken: mockUser.fcmToken,
       nickname: mockUser.nickname,
+      profileBgColor: mockUser.profileBgColor,
+      profileTextColor: mockUser.profileTextColor,
     };
 
     it('catch 에러', async () => {

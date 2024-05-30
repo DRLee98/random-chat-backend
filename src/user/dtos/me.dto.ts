@@ -3,7 +3,11 @@ import { CoreOutput } from 'src/common/dtos/output.dto';
 import { User } from '../entities/user.entity';
 
 @ObjectType()
-class Me extends PickType(User, ['id', 'nickname', 'profileUrl'], ObjectType) {
+class Me extends PickType(
+  User,
+  ['id', 'nickname', 'profileUrl', 'profileBgColor', 'profileTextColor'],
+  ObjectType,
+) {
   @Field(() => [ID])
   blockUserIds: string[];
 }

@@ -5,7 +5,15 @@ import { CoreOutput } from 'src/common/dtos/output.dto';
 @ObjectType()
 class User extends PickType(
   UserBase,
-  ['id', 'nickname', 'bio', 'profileUrl', 'language'],
+  [
+    'id',
+    'nickname',
+    'bio',
+    'profileUrl',
+    'profileBgColor',
+    'profileTextColor',
+    'language',
+  ],
   ObjectType,
 ) {}
 
