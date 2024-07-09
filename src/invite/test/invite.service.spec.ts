@@ -29,6 +29,7 @@ const mockRoomService = () => ({
   createRoomByInvite: jest.fn(),
   createUserRoomForAcceptedInvites: jest.fn(),
   deleteRoomOnInviteReject: jest.fn(),
+  deleteRoomOnExpireInvites: jest.fn(),
 });
 
 const mockNotificationService = () => ({

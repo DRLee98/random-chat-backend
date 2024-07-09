@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { LessThan, Not, Repository } from 'typeorm';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { CommonService } from 'src/common/common.service';
 import { UserService } from 'src/user/user.service';
@@ -297,6 +298,36 @@ export class InviteService {
       };
     } catch (error) {
       return this.commonService.error(error);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_HOUR, {
+    name: 'deleteExpiredInvites',
+  })
+  async deleteExpiredInvites() {
+    try {
+      const expiredInvites = await this.inviteRepository.find({
+        select: {
+          room: {
+            id: true,
+          },
+        },
+        where: {
+          createdAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 24)),
+        },
+        relations: {
+          room: true,
+        },
+      });
+
+      if (expiredInvites.length === 0) return;
+
+      const roomIds = [
+        ...new Set(expiredInvites.map((invite) => invite.room.id)),
+      ];
+      await this.roomService.deleteRoomOnExpireInvites(roomIds);
+    } catch (error) {
+      console.error('====== deleteExpiredInvites error:', error);
     }
   }
 }

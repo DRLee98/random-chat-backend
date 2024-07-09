@@ -3,6 +3,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
@@ -68,6 +69,7 @@ import { InviteModule } from './invite/invite.module';
         },
       },
     }),
+    ScheduleModule.forRoot(),
     AwsModule,
     FcmModule,
     NoticeModule,

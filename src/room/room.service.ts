@@ -572,6 +572,10 @@ export class RoomService {
     await this.roomRepository.delete(roomId);
   }
 
+  async deleteRoomOnExpireInvites(roomIds: string[]) {
+    await this.roomRepository.delete(roomIds);
+  }
+
   async findRoomByIds(
     ids: string[],
     options?: Omit<FindOneOptions<Room>, 'where'>,
