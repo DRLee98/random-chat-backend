@@ -10,10 +10,12 @@ import { NotificationModule } from 'src/notification/notification.module';
 
 import { Room } from './entities/room.entity';
 import { UserRoom } from './entities/user-room.entity';
+import { Invite } from '../invite/entities/invite.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Room]),
+    TypeOrmModule.forFeature([Invite]),
     TypeOrmModule.forFeature([UserRoom]),
     UserModule,
     forwardRef(() => MessageModule),

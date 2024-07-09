@@ -6,6 +6,7 @@ export const mockRepository = () => ({
   save: jest.fn(),
   create: jest.fn(),
   update: jest.fn(),
+  delete: jest.fn(),
   softDelete: jest.fn(),
   count: jest.fn(),
 });

@@ -107,7 +107,8 @@
       ".module.ts",
       "resolver.ts",
       ".constants.ts",
-      ".eslintrc.js"
+      ".eslintrc.js",
+      "ecosystem.config.js"
     ],
     "coverageThreshold": {
       "global": {

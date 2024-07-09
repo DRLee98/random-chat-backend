@@ -13,3 +13,7 @@ export const randomNameGenerator = () => {
     nouns[Math.floor(Math.random() * nouns.length)]
   } ${Math.floor(Math.random() * 9999)}`;
 };
+
+export const shuffleArray = (array: any[]) => {
+  return array.sort(() => Math.random() - 0.5);
+};

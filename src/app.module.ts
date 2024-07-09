@@ -26,6 +26,8 @@ import { Notification } from './notification/entities/notification.entity';
 import { Opinion } from './opinion/entities/opinion.entity';
 import { Comment } from './comment/entities/comment.entity';
 import { Reply } from './reply/entities/reply.entity';
+import { Invite } from './invite/entities/invite.entity';
+import { InviteModule } from './invite/invite.module';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { Reply } from './reply/entities/reply.entity';
       entities: [
         User,
         Room,
+        Invite,
         UserRoom,
         Message,
         Notice,
@@ -77,6 +80,7 @@ import { Reply } from './reply/entities/reply.entity';
     RoomModule,
     MessageModule,
     CommonModule,
+    InviteModule,
   ],
   controllers: [],
   providers: [],

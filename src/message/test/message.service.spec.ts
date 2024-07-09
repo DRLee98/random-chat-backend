@@ -359,19 +359,7 @@ describe('MessageService 테스트', () => {
       expect(notificationService.createNotification).toHaveBeenCalledTimes(0);
     });
 
-    it('타겟 유저가 없을 경우', async () => {
-      roomService.notiAllowRoomIds.mockResolvedValue(['test']);
-      userService.findUserByUserRoomId.mockResolvedValue([
-        { ...mockUser, noti: false },
-      ]);
-
-      await messageService.createNotiMessage(roomId, userId, message);
-
-      expect(userService.findUserByUserRoomId).toHaveBeenCalledTimes(1);
-      expect(notificationService.createNotification).toHaveBeenCalledTimes(0);
-    });
-
-    it('타겟 유저가 있을 경우', async () => {
+    it('타겟 유저가 한명인 경우', async () => {
       roomService.notiAllowRoomIds.mockResolvedValue(['test']);
       userService.findUserByUserRoomId.mockResolvedValue([mockUser]);
 
@@ -408,40 +396,6 @@ describe('MessageService 테스트', () => {
         mockUsers.length,
       );
       mockUsers.forEach((user) => {
-        expect(notificationService.createNotification).toHaveBeenCalledWith(
-          {
-            title: '새로운 메시지가 도착했습니다.',
-            message,
-            type: NotificationType.MESSAGE,
-            data: { roomId },
-          },
-          user,
-          true,
-        );
-      });
-    });
-
-    it('타겟 유저가 여러명 경우 (해당이 안되는 유저 포함)', async () => {
-      const mockUsers = new Array(10).fill(0).map((_, i) => ({
-        ...mockUser,
-        id: `test${i}`,
-        fcmToken: i % 3 === 0 ? null : `test${i}`,
-        noti: i % 2 === 0,
-      }));
-      roomService.notiAllowRoomIds.mockResolvedValue([
-        ...mockUsers.map(({ id }) => `${id}-test`),
-      ]);
-      userService.findUserByUserRoomId.mockResolvedValue(mockUsers);
-
-      await messageService.createNotiMessage(roomId, userId, message);
-
-      expect(roomService.notiAllowRoomIds).toHaveBeenCalledTimes(1);
-      expect(userService.findUserByUserRoomId).toHaveBeenCalledTimes(1);
-      const targetUsers = mockUsers.filter(({ noti }) => noti);
-      expect(notificationService.createNotification).toHaveBeenCalledTimes(
-        targetUsers.length,
-      );
-      targetUsers.forEach((user) => {
         expect(notificationService.createNotification).toHaveBeenCalledWith(
           {
             title: '새로운 메시지가 도착했습니다.',

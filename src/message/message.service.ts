@@ -265,18 +265,16 @@ export class MessageService {
 
     const users = await this.userService.findUserByUserRoomId(allowRoomIds);
     users.forEach((user) => {
-      if (user.noti) {
-        this.notificationService.createNotification(
-          {
-            title: '새로운 메시지가 도착했습니다.',
-            message,
-            type: NotificationType.MESSAGE,
-            data: { roomId },
-          },
-          user,
-          true,
-        );
-      }
+      this.notificationService.createNotification(
+        {
+          title: '새로운 메시지가 도착했습니다.',
+          message,
+          type: NotificationType.MESSAGE,
+          data: { roomId },
+        },
+        user,
+        true,
+      );
     });
   }
 }

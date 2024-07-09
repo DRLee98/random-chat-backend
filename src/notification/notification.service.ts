@@ -107,6 +107,11 @@ export class NotificationService {
     onlyPush?: boolean,
   ): Promise<CreateNotificationOutput> => {
     try {
+      if (!user.noti)
+        return {
+          ok: true,
+        };
+
       if (user.fcmToken) {
         this.fcmService.pushMessage({
           token: user.fcmToken,

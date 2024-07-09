@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { FindOneOptions, In, Not, Repository } from 'typeorm';
 
 import { UserService } from 'src/user/user.service';
 import { MessageService } from 'src/message/message.service';
@@ -11,10 +11,11 @@ import { Room } from './entities/room.entity';
 import { UserRoom } from './entities/user-room.entity';
 import { User } from 'src/user/entities/user.entity';
 import { NotificationType } from 'src/notification/entities/notification.entity';
+import { Invite } from 'src/invite/entities/invite.entity';
 
 import { CreateRandomRoomOutput } from './dtos/create-random-room.dto';
 import { UpdateRoomInput, UpdateRoomOutput } from './dtos/update-room.dto';
-import { MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
+import { MyRoom, MyRoomsInput, MyRoomsOutput } from './dtos/my-rooms.dto';
 import { RoomDetailInput, RoomDetailOutput } from './dtos/room-detail.dto';
 import { DeleteRoomInput, DeleteRoomOutput } from './dtos/delete-room.dto';
 
@@ -226,19 +227,17 @@ export class RoomService {
         },
       });
 
-      if (targetUser.noti) {
-        this.notificationService.createNotification(
-          {
-            title: '새로운 채팅이 생성되었습니다.',
-            message: `${user.nickname}님과 채팅을 시작해보세요!`,
-            type: NotificationType.ROOM,
-            data: {
-              roomId: room.id,
-            },
+      this.notificationService.createNotification(
+        {
+          title: '새로운 채팅이 생성되었습니다.',
+          message: `${user.nickname}님과 채팅을 시작해보세요!`,
+          type: NotificationType.ROOM,
+          data: {
+            roomId: room.id,
           },
-          targetUser,
-        );
-      }
+        },
+        targetUser,
+      );
 
       return {
         ok: true,
@@ -497,5 +496,90 @@ export class RoomService {
     });
 
     return userRoom.map((item) => item.id);
+  }
+
+  async createRoomByInvite(invites: Invite[]) {
+    const room = this.roomRepository.create({
+      invites: invites,
+    });
+
+    await this.roomRepository.save(room);
+
+    return room;
+  }
+
+  async createUserRoomForAcceptedInvites(
+    userId: string,
+    roomId: string,
+    acceptInvites: Invite[],
+  ) {
+    const room = await this.roomRepository.findOne({
+      where: {
+        id: roomId,
+      },
+    });
+
+    if (!room) return;
+    this.updateRoomUpdateAt(room.id);
+
+    let myUserRoom: MyRoom = null;
+    await Promise.all(
+      acceptInvites.map(async (invite) => {
+        const userRoom = await this.userRoomRepository.save({
+          user: invite.user,
+          room: room,
+        });
+
+        const users = acceptInvites
+          .filter((item) => item.id !== invite.id)
+          .map((item) => item.user);
+
+        if (invite.user.id === userId) {
+          myUserRoom = {
+            ...userRoom,
+            users,
+            lastMessage: '',
+          };
+        } else {
+          this.notificationService.createNotification(
+            {
+              title: '새로운 채팅이 생성되었습니다.',
+              message: `채팅을 시작해보세요!`,
+              type: NotificationType.ROOM,
+              data: {
+                roomId: room.id,
+              },
+            },
+            invite.user,
+          );
+        }
+
+        this.pubSub.publish(NEW_ROOM, {
+          newRoom: {
+            ...userRoom,
+            room,
+            lastMessage: '',
+            users,
+          },
+        });
+      }),
+    );
+
+    return myUserRoom;
+  }
+
+  async deleteRoomOnInviteReject(roomId: string) {
+    await this.roomRepository.delete(roomId);
+  }
+
+  async findRoomByIds(
+    ids: string[],
+    options?: Omit<FindOneOptions<Room>, 'where'>,
+  ): Promise<Room[]> {
+    const room = await this.roomRepository.find({
+      ...options,
+      where: { id: In(ids) },
+    });
+    return room;
   }
 }

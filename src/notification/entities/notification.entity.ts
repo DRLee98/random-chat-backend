@@ -16,6 +16,7 @@ export enum NotificationType {
   ROOM = 'ROOM',
   MESSAGE = 'MESSAGE',
   OPINION = 'OPINION',
+  INVITE = 'INVITE',
 }
 
 registerEnumType(NotificationType, { name: 'NotificationType' });

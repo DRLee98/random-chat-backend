@@ -297,10 +297,20 @@ export class UserService {
     blockIds: string[],
     options?: Omit<FindOneOptions<User>, 'where'>,
   ): Promise<User[]> {
-    const user = await this.userRepository.find({
+    const userCount = await this.userRepository.count({
       ...options,
       where: { id: Not(In(blockIds)), allowMessage: true },
     });
+
+    const skip = Math.floor(Math.random() * (userCount - 50));
+
+    const user = await this.userRepository.find({
+      ...options,
+      where: { id: Not(In(blockIds)), allowMessage: true },
+      skip: skip > 0 ? skip : 0,
+      take: 50,
+    });
+
     return user;
   }
 
@@ -356,5 +366,55 @@ export class UserService {
     } catch (error) {
       return this.commonService.error(error);
     }
+  }
+
+  async existingChatUserIds(userId: string) {
+    const user = await this.userRepository.findOne({
+      select: {
+        rooms: {
+          id: true,
+          room: {
+            id: true,
+          },
+        },
+      },
+      where: {
+        id: userId,
+      },
+      relations: {
+        rooms: {
+          room: true,
+        },
+      },
+    });
+
+    const roomIds = user.rooms.map((item) => item.room.id);
+
+    // 이미 채팅중인 유저 목록
+    const existingChatUsers = await this.userRepository.find({
+      select: {
+        rooms: {
+          id: true,
+          room: {
+            id: true,
+          },
+        },
+      },
+      where: {
+        id: Not(userId),
+        rooms: {
+          room: {
+            id: In(roomIds),
+          },
+        },
+      },
+      relations: {
+        rooms: {
+          room: true,
+        },
+      },
+    });
+
+    return existingChatUsers.map((item) => item.id);
   }
 }

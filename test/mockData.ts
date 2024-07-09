@@ -1,5 +1,6 @@
 import { Upload } from 'graphql-upload';
 import { Comment } from 'src/comment/entities/comment.entity';
+import { Invite, InviteStatus } from 'src/invite/entities/invite.entity';
 import { Notice, NoticeCategory } from 'src/notice/entities/notice.entity';
 import {
   Notification,
@@ -11,6 +12,9 @@ import {
   OpinionStatus,
 } from 'src/opinion/entities/opinion.entity';
 import { Reply } from 'src/reply/entities/reply.entity';
+import { MyRoom } from 'src/room/dtos/my-rooms.dto';
+import { Room } from 'src/room/entities/room.entity';
+import { UserRoom } from 'src/room/entities/user-room.entity';
 import { Language, SocialPlatform, User } from 'src/user/entities/user.entity';
 
 export const mockUser: User = {
@@ -32,6 +36,7 @@ export const mockUser: User = {
   comments: [],
   replies: [],
   opinions: [],
+  invites: [],
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
@@ -56,6 +61,7 @@ export const mockUser2: User = {
   comments: [],
   replies: [],
   opinions: [],
+  invites: [],
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
@@ -146,6 +152,54 @@ export const mockOpinion3: Opinion = {
   category: OpinionCategory.ETC,
   status: OpinionStatus.ANSWERED,
   user: mockUser,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+};
+
+export const mockRoom: Room = {
+  id: '1',
+  userRooms: [],
+  messages: [],
+  invites: [],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+};
+
+export const mockUserRoom: UserRoom = {
+  id: '1',
+  room: mockRoom,
+  noti: true,
+  newMessage: 0,
+  user: mockUser,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+};
+
+export const mockInvite: Invite = {
+  id: '1',
+  status: InviteStatus.WAIT,
+  room: mockRoom,
+  user: mockUser,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+};
+
+export const mockInviteRoom = {
+  ...mockRoom,
+  invites: [mockInvite],
+};
+
+export const mockMyRoom: MyRoom = {
+  id: '1',
+  room: mockRoom,
+  noti: true,
+  newMessage: 0,
+  users: [mockUser, mockUser2],
+  lastMessage: '',
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,

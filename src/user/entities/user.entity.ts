@@ -13,6 +13,7 @@ import { Notification } from 'src/notification/entities/notification.entity';
 import { Comment } from 'src/comment/entities/comment.entity';
 import { Reply } from 'src/reply/entities/reply.entity';
 import { Opinion } from 'src/opinion/entities/opinion.entity';
+import { Invite } from 'src/invite/entities/invite.entity';
 
 export enum Language {
   ko = 'ko', // 한국어
@@ -99,6 +100,10 @@ export class User extends CoreEntity {
   @Field(() => [UserRoom])
   @OneToMany(() => UserRoom, (room) => room.user)
   rooms: UserRoom[];
+
+  @Field(() => [Invite])
+  @OneToMany(() => Invite, (invite) => invite.user)
+  invites: Invite[];
 
   @Field(() => [Message])
   @OneToMany(() => Message, (message) => message.user)
