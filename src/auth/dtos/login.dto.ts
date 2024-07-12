@@ -12,4 +12,7 @@ export class LoginInput extends PickType(User, [
 export class LoginOutput extends CoreOutput {
   @Field(() => String, { nullable: true })
   token?: string;
+
+  @Field(() => Boolean, { nullable: true })
+  suspended?: boolean;
 }

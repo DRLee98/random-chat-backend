@@ -1,6 +1,8 @@
 import {
   CanActivate,
   ExecutionContext,
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -32,7 +34,13 @@ export class AuthGuard implements CanActivate {
         const decodeId = this.authService.decodeToken(token);
         if (decodeId) {
           const user = await this.userService.findUserById(decodeId);
-          if (user) gqlContext.user = user;
+          if (user) {
+            if (user.suspensionEndAt && user.suspensionEndAt > new Date()) {
+              throw new HttpException('Suspended', HttpStatus.FORBIDDEN);
+            } else {
+              gqlContext.user = user;
+            }
+          }
         }
       }
 

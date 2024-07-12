@@ -20,7 +20,14 @@ export class AuthService {
       socialPlatform,
     );
     if (user) {
-      const { id } = user;
+      const { id, suspensionEndAt } = user;
+      if (suspensionEndAt && suspensionEndAt > new Date()) {
+        return {
+          ok: false,
+          error: '정지된 계정입니다.',
+          suspended: true,
+        };
+      }
       return {
         ok: true,
         token: this.jwtService.sign({ id }),

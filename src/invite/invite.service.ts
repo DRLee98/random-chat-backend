@@ -313,7 +313,7 @@ export class InviteService {
           },
         },
         where: {
-          createdAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 24)),
+          createdAt: LessThan(new Date(Date.now() - 1000 * 60 * 60 * 23)),
         },
         relations: {
           room: true,

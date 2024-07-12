@@ -8,6 +8,10 @@ export const getOpinionPath = (id: string) => {
   return `opinion/${id}`;
 };
 
+export const getAccusationPath = (id: string) => {
+  return `accusation/${id}`;
+};
+
 export const randomNameGenerator = () => {
   return `${determiners[Math.floor(Math.random() * determiners.length)]} ${
     nouns[Math.floor(Math.random() * nouns.length)]

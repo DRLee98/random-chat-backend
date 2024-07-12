@@ -4,7 +4,15 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Message } from 'src/message/entities/message.entity';
@@ -14,6 +22,7 @@ import { Comment } from 'src/comment/entities/comment.entity';
 import { Reply } from 'src/reply/entities/reply.entity';
 import { Opinion } from 'src/opinion/entities/opinion.entity';
 import { Invite } from 'src/invite/entities/invite.entity';
+import { AccusationInfo } from 'src/accusation/entities/accusation-info.entity';
 
 export enum Language {
   ko = 'ko', // 한국어
@@ -124,4 +133,13 @@ export class User extends CoreEntity {
   @Field(() => [Opinion])
   @OneToMany(() => Opinion, (opinion) => opinion.user)
   opinions: Opinion[];
+
+  @Field(() => AccusationInfo)
+  @OneToOne(() => AccusationInfo, (accusationInfo) => accusationInfo.user)
+  @JoinColumn()
+  accusationInfo: AccusationInfo;
+
+  @Field(() => Date, { nullable: true })
+  @Column({ type: 'timestamp', default: null })
+  suspensionEndAt: Date | null;
 }

@@ -417,4 +417,10 @@ export class UserService {
 
     return existingChatUsers.map((item) => item.id);
   }
+
+  async suspendUserUntilDate(userId: string, endDate: Date) {
+    await this.userRepository.update(userId, {
+      suspensionEndAt: endDate,
+    });
+  }
 }

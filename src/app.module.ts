@@ -17,6 +17,8 @@ import { NotificationModule } from './notification/notification.module';
 import { OpinionModule } from './opinion/opinion.module';
 import { CommentModule } from './comment/comment.module';
 import { ReplyModule } from './reply/reply.module';
+import { InviteModule } from './invite/invite.module';
+import { AccusationModule } from './accusation/accusation.module';
 
 import { User } from './user/entities/user.entity';
 import { Room } from './room/entities/room.entity';
@@ -28,7 +30,8 @@ import { Opinion } from './opinion/entities/opinion.entity';
 import { Comment } from './comment/entities/comment.entity';
 import { Reply } from './reply/entities/reply.entity';
 import { Invite } from './invite/entities/invite.entity';
-import { InviteModule } from './invite/invite.module';
+import { AccusationInfo } from './accusation/entities/accusation-info.entity';
+import { Accusation } from './accusation/entities/accusation.entity';
 
 @Module({
   imports: [
@@ -57,6 +60,8 @@ import { InviteModule } from './invite/invite.module';
         Opinion,
         Comment,
         Reply,
+        AccusationInfo,
+        Accusation,
       ],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -83,6 +88,7 @@ import { InviteModule } from './invite/invite.module';
     MessageModule,
     CommonModule,
     InviteModule,
+    AccusationModule,
   ],
   controllers: [],
   providers: [],

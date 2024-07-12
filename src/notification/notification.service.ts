@@ -107,7 +107,7 @@ export class NotificationService {
     onlyPush?: boolean,
   ): Promise<CreateNotificationOutput> => {
     try {
-      if (!user.noti)
+      if (!user.noti || user.suspensionEndAt > new Date())
         return {
           ok: true,
         };

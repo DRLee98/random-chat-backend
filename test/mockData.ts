@@ -1,4 +1,9 @@
 import { Upload } from 'graphql-upload';
+import { AccusationInfo } from 'src/accusation/entities/accusation-info.entity';
+import {
+  Accusation,
+  AccusationStatus,
+} from 'src/accusation/entities/accusation.entity';
 import { Comment } from 'src/comment/entities/comment.entity';
 import { Invite, InviteStatus } from 'src/invite/entities/invite.entity';
 import { Notice, NoticeCategory } from 'src/notice/entities/notice.entity';
@@ -37,6 +42,8 @@ export const mockUser: User = {
   replies: [],
   opinions: [],
   invites: [],
+  accusationInfo: null,
+  suspensionEndAt: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
@@ -62,6 +69,8 @@ export const mockUser2: User = {
   replies: [],
   opinions: [],
   invites: [],
+  accusationInfo: null,
+  suspensionEndAt: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
@@ -200,6 +209,30 @@ export const mockMyRoom: MyRoom = {
   newMessage: 0,
   users: [mockUser, mockUser2],
   lastMessage: '',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+};
+
+export const mockAccusationInfo: AccusationInfo = {
+  id: '1',
+  count: 0,
+  showAlert: false,
+  user: mockUser,
+  accusations: [],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+};
+
+export const mockAccusation: Accusation = {
+  id: '1',
+  authorId: mockUser.id,
+  content: 'test',
+  imageUrls: [],
+  status: AccusationStatus.WAIT,
+  answer: '',
+  info: mockAccusationInfo,
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
