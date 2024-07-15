@@ -30,6 +30,7 @@ const mockRoomService = () => ({
   createUserRoomForAcceptedInvites: jest.fn(),
   deleteRoomOnInviteReject: jest.fn(),
   deleteRoomOnExpireInvites: jest.fn(),
+  myInviteRoomIds: jest.fn(),
 });
 
 const mockNotificationService = () => ({
@@ -95,6 +96,8 @@ describe('InviteService 테스트', () => {
       userService.findUserById.mockResolvedValue(mockUser);
       userService.findBlockedMe.mockResolvedValue([]);
       userService.existingChatUserIds.mockResolvedValue([]);
+      roomService.myInviteRoomIds.mockResolvedValue(['1', '2', '3']);
+      inviteRepository.find.mockResolvedValue([]);
       userService.findChatEnabledUsers.mockResolvedValue([]);
 
       const result = await inviteService.inviteTargets({ count: 2 }, mockUser);
@@ -106,6 +109,8 @@ describe('InviteService 테스트', () => {
       expect(userService.findUserById).toHaveBeenCalledTimes(1);
       expect(userService.findBlockedMe).toHaveBeenCalledTimes(1);
       expect(userService.existingChatUserIds).toHaveBeenCalledTimes(1);
+      expect(roomService.myInviteRoomIds).toHaveBeenCalledTimes(1);
+      expect(inviteRepository.find).toHaveBeenCalledTimes(1);
       expect(userService.findChatEnabledUsers).toHaveBeenCalledTimes(1);
     });
 
@@ -113,6 +118,10 @@ describe('InviteService 테스트', () => {
       userService.findUserById.mockResolvedValue(mockUser);
       userService.findBlockedMe.mockResolvedValue([]);
       userService.existingChatUserIds.mockResolvedValue([]);
+      roomService.myInviteRoomIds.mockResolvedValue(['1', '2', '3']);
+      inviteRepository.find.mockResolvedValue([
+        { ...mockInvite, user: mockUser2 },
+      ]);
       userService.findChatEnabledUsers.mockResolvedValue([
         mockUser2,
         mockUser2,
@@ -129,6 +138,8 @@ describe('InviteService 테스트', () => {
       expect(userService.findUserById).toHaveBeenCalledTimes(1);
       expect(userService.findBlockedMe).toHaveBeenCalledTimes(1);
       expect(userService.existingChatUserIds).toHaveBeenCalledTimes(1);
+      expect(roomService.myInviteRoomIds).toHaveBeenCalledTimes(1);
+      expect(inviteRepository.find).toHaveBeenCalledTimes(1);
       expect(userService.findChatEnabledUsers).toHaveBeenCalledTimes(1);
     });
   });
@@ -148,7 +159,8 @@ describe('InviteService 테스트', () => {
   });
 
   describe('초대 생성 테스트', () => {
-    it('초대 가능한 유저가 없을 경우', async () => {
+    it('초대 목록이 가득 찼을 경우', async () => {
+      inviteRepository.find.mockResolvedValue(new Array(5).fill(mockInvite));
       userService.findUserById.mockResolvedValue(null);
 
       const result = await inviteService.createInvite(
@@ -160,10 +172,28 @@ describe('InviteService 테스트', () => {
       expect(typeof result.error).toBe('string');
       expect(result.room).toEqual(undefined);
 
+      expect(inviteRepository.find).toHaveBeenCalledTimes(1);
+    });
+
+    it('초대 가능한 유저가 없을 경우', async () => {
+      inviteRepository.find.mockResolvedValue([]);
+      userService.findUserById.mockResolvedValue(null);
+
+      const result = await inviteService.createInvite(
+        { targetIds: ['1'] },
+        mockUser,
+      );
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+      expect(result.room).toEqual(undefined);
+
+      expect(inviteRepository.find).toHaveBeenCalledTimes(1);
       expect(userService.findUserById).toHaveBeenCalledTimes(1);
     });
 
     it('초대 생성', async () => {
+      inviteRepository.find.mockResolvedValue([]);
       userService.findUserById.mockResolvedValue(mockUser2);
       inviteRepository.save.mockResolvedValueOnce(mockInvite);
       inviteRepository.save.mockResolvedValue({
@@ -188,6 +218,7 @@ describe('InviteService 테스트', () => {
         ],
       });
 
+      expect(inviteRepository.find).toHaveBeenCalledTimes(1);
       expect(userService.findUserById).toHaveBeenCalledTimes(2);
       expect(userService.findUserById).toHaveBeenCalledWith('1');
       expect(userService.findUserById).toHaveBeenCalledWith('2');

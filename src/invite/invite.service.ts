@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Not, Repository } from 'typeorm';
+import { In, LessThan, Not, Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { CommonService } from 'src/common/common.service';
@@ -72,9 +72,28 @@ export class InviteService {
         user.id,
       );
 
+      const roomIds = await this.roomService.myInviteRoomIds(user.id);
+
+      // 이미 초대된 유저 목록
+      const existingInviteUserIds = await this.inviteRepository.find({
+        where: {
+          room: {
+            id: In(roomIds),
+          },
+          user: {
+            id: Not(user.id),
+          },
+        },
+        relations: {
+          user: true,
+          room: true,
+        },
+      });
+
       const blockIds = [
         ...new Set([
           ...existingChatUserIds,
+          ...existingInviteUserIds.map((item) => item.user.id),
           ...user.blockUsers.map((item) => item.id),
           ...blockMeUsers.map((item) => item.id),
           user.id,
@@ -148,6 +167,19 @@ export class InviteService {
     user: User,
   ): Promise<CreateInviteOutput> {
     try {
+      const myInvites = await this.inviteRepository.find({
+        where: {
+          user: {
+            id: user.id,
+          },
+        },
+      });
+
+      if (myInvites.length > 5)
+        return this.commonService.error(
+          '초대 목록이 가득 찼습니다.\n초대에 응답 후 다시 시도해주세요.',
+        );
+
       const targetUsers = (
         await Promise.all(
           input.targetIds.map(async (targetId) => {

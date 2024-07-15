@@ -576,6 +576,23 @@ export class RoomService {
     await this.roomRepository.delete(roomIds);
   }
 
+  async myInviteRoomIds(userId: string) {
+    const rooms = await this.roomRepository.find({
+      select: {
+        id: true,
+      },
+      where: {
+        invites: {
+          user: {
+            id: userId,
+          },
+        },
+      },
+    });
+
+    return rooms.map((item) => item.id);
+  }
+
   async findRoomByIds(
     ids: string[],
     options?: Omit<FindOneOptions<Room>, 'where'>,
