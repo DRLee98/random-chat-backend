@@ -175,7 +175,7 @@ export class InviteService {
         },
       });
 
-      if (myInvites.length > 5)
+      if (myInvites.length >= 5)
         return this.commonService.error(
           '초대 목록이 가득 찼습니다.\n초대에 응답 후 다시 시도해주세요.',
         );
