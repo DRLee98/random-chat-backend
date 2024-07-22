@@ -25,7 +25,7 @@ const mockUserService = () => ({
 });
 
 const mockRoomService = () => ({
-  findRoomByIds: jest.fn(),
+  findInviteRoomByIds: jest.fn(),
   createRoomByInvite: jest.fn(),
   createUserRoomForAcceptedInvites: jest.fn(),
   deleteRoomOnInviteReject: jest.fn(),
@@ -146,7 +146,7 @@ describe('InviteService 테스트', () => {
 
   it('초대 목록 조회 테스트', async () => {
     inviteRepository.find.mockResolvedValue([mockInvite]);
-    roomService.findRoomByIds.mockResolvedValue([mockInviteRoom]);
+    roomService.findInviteRoomByIds.mockResolvedValue([mockInviteRoom]);
 
     const result = await inviteService.myInvites(mockUser);
 
@@ -155,7 +155,7 @@ describe('InviteService 테스트', () => {
     expect(result.rooms).toEqual([mockInviteRoom]);
 
     expect(inviteRepository.find).toHaveBeenCalledTimes(1);
-    expect(roomService.findRoomByIds).toHaveBeenCalledTimes(1);
+    expect(roomService.findInviteRoomByIds).toHaveBeenCalledTimes(1);
   });
 
   describe('초대 생성 테스트', () => {

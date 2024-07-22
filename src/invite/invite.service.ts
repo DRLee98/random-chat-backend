@@ -139,18 +139,8 @@ export class InviteService {
         },
       });
 
-      const rooms = await this.roomService.findRoomByIds(
+      const rooms = await this.roomService.findInviteRoomByIds(
         myInvites.map((invite) => invite.room.id),
-        {
-          relations: {
-            invites: {
-              user: true,
-            },
-          },
-          order: {
-            createdAt: 'DESC',
-          },
-        },
       );
 
       return {
