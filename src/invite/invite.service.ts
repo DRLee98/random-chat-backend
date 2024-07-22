@@ -139,13 +139,30 @@ export class InviteService {
         },
       });
 
-      const rooms = await this.roomService.findInviteRoomByIds(
+      const rooms = await this.roomService.findRoomByIds(
         myInvites.map((invite) => invite.room.id),
+        {
+          relations: {
+            invites: {
+              user: true,
+            },
+          },
+          order: {
+            createdAt: 'DESC',
+          },
+        },
+      );
+
+      const filteredRooms = rooms.filter(
+        (room) =>
+          room.invites.filter((invite) => {
+            return invite.user !== null;
+          }).length > 1,
       );
 
       return {
         ok: true,
-        rooms,
+        rooms: filteredRooms,
       };
     } catch (error) {
       return this.commonService.error(error);
@@ -311,7 +328,7 @@ export class InviteService {
             room: myRoom,
           };
         } else {
-          this.roomService.deleteRoomOnInviteReject(invite.room.id);
+          this.roomService.deleteRoomOnInvite(invite.room.id);
         }
       }
 
@@ -321,6 +338,29 @@ export class InviteService {
     } catch (error) {
       return this.commonService.error(error);
     }
+  }
+
+  async deleteMyInvites(userId: string) {
+    const invites = await this.inviteRepository.find({
+      select: {
+        room: {
+          id: true,
+        },
+      },
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: {
+        room: true,
+      },
+    });
+
+    if (invites.length === 0) return;
+    const roomIds = invites.map((invite) => invite.room.id);
+
+    await this.roomService.deleteRoomOnInvites(roomIds);
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
@@ -347,7 +387,7 @@ export class InviteService {
       const roomIds = [
         ...new Set(expiredInvites.map((invite) => invite.room.id)),
       ];
-      await this.roomService.deleteRoomOnExpireInvites(roomIds);
+      await this.roomService.deleteRoomOnInvites(roomIds);
     } catch (error) {
       console.error('====== deleteExpiredInvites error:', error);
     }

@@ -197,9 +197,19 @@ export const mockInvite: Invite = {
   deletedAt: null,
 };
 
+export const mockInvite2: Invite = {
+  id: '2',
+  status: InviteStatus.WAIT,
+  room: mockRoom,
+  user: mockUser2,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+};
+
 export const mockInviteRoom = {
   ...mockRoom,
-  invites: [mockInvite],
+  invites: [mockInvite, mockInvite2],
 };
 
 export const mockMyRoom: MyRoom = {

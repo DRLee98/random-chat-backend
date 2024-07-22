@@ -715,4 +715,16 @@ describe('RoomService 테스트', () => {
       expect(pubSub.publish).toHaveBeenCalledTimes(invites.length);
     });
   });
+
+  it('deleteRoomOnInvite 테스트', async () => {
+    await roomService.deleteRoomOnInvite(mockRoom.id);
+
+    expect(roomRepository.delete).toHaveBeenCalledTimes(1);
+  });
+
+  it('deleteRoomOnInvites 테스트', async () => {
+    await roomService.deleteRoomOnInvites([mockRoom.id]);
+
+    expect(roomRepository.delete).toHaveBeenCalledTimes(1);
+  });
 });

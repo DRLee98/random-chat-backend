@@ -25,11 +25,11 @@ const mockUserService = () => ({
 });
 
 const mockRoomService = () => ({
-  findInviteRoomByIds: jest.fn(),
+  findRoomByIds: jest.fn(),
   createRoomByInvite: jest.fn(),
   createUserRoomForAcceptedInvites: jest.fn(),
-  deleteRoomOnInviteReject: jest.fn(),
-  deleteRoomOnExpireInvites: jest.fn(),
+  deleteRoomOnInvite: jest.fn(),
+  deleteRoomOnInvites: jest.fn(),
   myInviteRoomIds: jest.fn(),
 });
 
@@ -144,18 +144,37 @@ describe('InviteService 테스트', () => {
     });
   });
 
-  it('초대 목록 조회 테스트', async () => {
-    inviteRepository.find.mockResolvedValue([mockInvite]);
-    roomService.findInviteRoomByIds.mockResolvedValue([mockInviteRoom]);
+  describe('초대 목록 조회 테스트', () => {
+    it('상대방이 없을 경우', async () => {
+      inviteRepository.find.mockResolvedValue([mockInvite]);
+      roomService.findRoomByIds.mockResolvedValue([
+        mockInviteRoom,
+        { ...mockInviteRoom, invites: [mockInvite] },
+      ]);
 
-    const result = await inviteService.myInvites(mockUser);
+      const result = await inviteService.myInvites(mockUser);
 
-    expect(result.ok).toEqual(true);
-    expect(result.error).toEqual(undefined);
-    expect(result.rooms).toEqual([mockInviteRoom]);
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+      expect(result.rooms).toEqual([mockInviteRoom]);
 
-    expect(inviteRepository.find).toHaveBeenCalledTimes(1);
-    expect(roomService.findInviteRoomByIds).toHaveBeenCalledTimes(1);
+      expect(inviteRepository.find).toHaveBeenCalledTimes(1);
+      expect(roomService.findRoomByIds).toHaveBeenCalledTimes(1);
+    });
+
+    it('초대 목록 조회', async () => {
+      inviteRepository.find.mockResolvedValue([mockInvite]);
+      roomService.findRoomByIds.mockResolvedValue([mockInviteRoom]);
+
+      const result = await inviteService.myInvites(mockUser);
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+      expect(result.rooms).toEqual([mockInviteRoom]);
+
+      expect(inviteRepository.find).toHaveBeenCalledTimes(1);
+      expect(roomService.findRoomByIds).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('초대 생성 테스트', () => {
@@ -337,7 +356,7 @@ describe('InviteService 테스트', () => {
       expect(
         roomService.createUserRoomForAcceptedInvites,
       ).toHaveBeenCalledTimes(0);
-      expect(roomService.deleteRoomOnInviteReject).toHaveBeenCalledTimes(1);
+      expect(roomService.deleteRoomOnInvite).toHaveBeenCalledTimes(1);
 
       expect(pubSub.publish).toHaveBeenCalledTimes(1);
       expect(notificationService.createNotification).toHaveBeenCalledTimes(1);

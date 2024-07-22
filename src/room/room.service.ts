@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { FindOneOptions, In, Not, Repository } from 'typeorm';
 
 import { UserService } from 'src/user/user.service';
 import { MessageService } from 'src/message/message.service';
@@ -568,11 +568,11 @@ export class RoomService {
     return myUserRoom;
   }
 
-  async deleteRoomOnInviteReject(roomId: string) {
+  async deleteRoomOnInvite(roomId: string) {
     await this.roomRepository.delete(roomId);
   }
 
-  async deleteRoomOnExpireInvites(roomIds: string[]) {
+  async deleteRoomOnInvites(roomIds: string[]) {
     await this.roomRepository.delete(roomIds);
   }
 
@@ -593,22 +593,13 @@ export class RoomService {
     return rooms.map((item) => item.id);
   }
 
-  async findInviteRoomByIds(ids: string[]): Promise<Room[]> {
+  async findRoomByIds(
+    ids: string[],
+    options?: Omit<FindOneOptions<Room>, 'where'>,
+  ): Promise<Room[]> {
     const room = await this.roomRepository.find({
-      order: {
-        createdAt: 'DESC',
-      },
-      where: {
-        id: In(ids),
-        invites: {
-          user: Not(null),
-        },
-      },
-      relations: {
-        invites: {
-          user: true,
-        },
-      },
+      ...options,
+      where: { id: In(ids) },
     });
     return room;
   }
