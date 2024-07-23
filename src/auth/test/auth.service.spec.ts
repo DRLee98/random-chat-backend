@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginInput } from '../dtos/login.dto';
 import { MockService } from 'test/utils';
 import { SocialPlatform } from 'src/user/entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 const token = 'Bearer token';
 
@@ -21,6 +22,16 @@ const mockJwtService = () => ({
   sign: jest.fn(),
   verify: jest.fn(),
 });
+
+const env = {
+  PASSWORD: 'password',
+};
+
+const mockConfigService = () => {
+  return {
+    get: (key: string) => env[key],
+  };
+};
 
 describe('AuthService 테스트', () => {
   let authService: AuthService;
@@ -39,6 +50,10 @@ describe('AuthService 테스트', () => {
         {
           provide: JwtService,
           useValue: mockJwtService(),
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService(),
         },
       ],
     }).compile();
@@ -120,6 +135,30 @@ describe('AuthService 테스트', () => {
 
       expect(jwtService.verify).toHaveBeenCalledTimes(1);
       expect(jwtService.verify).toHaveBeenCalledWith(token.split(' ')[1]);
+    });
+  });
+
+  describe('비밀번호 체크 테스트', () => {
+    it('비밀번호가 일치하지 않는 경우', () => {
+      const input = {
+        password: 'wrong',
+      };
+
+      const result = authService.passwordCheck(input);
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
+    it('비밀번호가 일치하는 경우', () => {
+      const input = {
+        password: env.PASSWORD,
+      };
+
+      const result = authService.passwordCheck(input);
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
     });
   });
 });

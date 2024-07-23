@@ -3,8 +3,13 @@ import { JwtService } from '@nestjs/jwt';
 
 import { UserService } from 'src/user/user.service';
 import { CommonService } from 'src/common/common.service';
+import { ConfigService } from '@nestjs/config';
 
 import { LoginInput, LoginOutput } from './dtos/login.dto';
+import {
+  PasswordCheckInput,
+  PasswordCheckOutput,
+} from './dtos/password-check.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +17,7 @@ export class AuthService {
     private readonly commonService: CommonService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async login({ socialId, socialPlatform }: LoginInput): Promise<LoginOutput> {
@@ -46,5 +52,12 @@ export class AuthService {
     } catch (error) {
       return null;
     }
+  }
+
+  passwordCheck(input: PasswordCheckInput): PasswordCheckOutput {
+    if (input.password !== this.configService.get('PASSWORD'))
+      return this.commonService.error('비밀번호가 맞지 않습니다');
+
+    return { ok: true };
   }
 }
