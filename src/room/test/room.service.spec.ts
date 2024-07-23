@@ -561,6 +561,7 @@ describe('RoomService 테스트', () => {
       userRoomRepository.find.mockResolvedValue([
         { id: '1', user: { id: 'test user' } },
         { id: '2', user: { id: mockUser.id } },
+        { id: '3', user: { id: mockUser2.id } },
       ]);
 
       const result = await roomService.deleteRoom(input, mockUser);
@@ -584,9 +585,10 @@ describe('RoomService 테스트', () => {
       expect(messageService.deleteMessages).toHaveBeenCalledTimes(0);
     });
 
-    it('방 나간 후 방에 남은 유저가 없는 경우', async () => {
+    it('방 나간 후 방에 남은 유저가 한명이하인 경우', async () => {
       roomRepository.findOne.mockResolvedValue({ id: 'test room' });
       userRoomRepository.find.mockResolvedValue([
+        { id: '1', user: { id: 'test user' } },
         { id: '2', user: { id: mockUser.id } },
       ]);
 

@@ -379,7 +379,7 @@ export class RoomService {
         user,
       );
 
-      if (unDeletedUserRooms.length === 0) {
+      if (unDeletedUserRooms.length <= 1) {
         this.roomRepository.softDelete(input.roomId);
         this.messageService.deleteMessages(input.roomId);
       }
