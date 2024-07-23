@@ -86,6 +86,64 @@ describe('OpinionService', () => {
     expect(notificationService).toBeDefined();
   });
 
+  describe('나의 의견 목록 조회 테스트', () => {
+    it('나의 의견 목록 조회', async () => {
+      opinionRepository.find.mockResolvedValue([mockOpinion]);
+
+      const result = await opinionService.myOpinions(
+        { take: 20, skip: 0 },
+        mockUser,
+      );
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+      expect(result.opinions).toEqual([mockOpinion]);
+
+      expect(opinionRepository.find).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('의견 목록 조회 테스트', () => {
+    const input = {
+      take: 20,
+      skip: 0,
+    };
+    it('비밀번호가 공백일 경우', async () => {
+      const result = await opinionService.viewOpinions({
+        password: '',
+        ...input,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
+    it('비밀번호가 틀렸을 경우', async () => {
+      const result = await opinionService.viewOpinions({
+        password: 'xx',
+        ...input,
+      });
+
+      expect(result.ok).toEqual(false);
+      expect(typeof result.error).toBe('string');
+    });
+
+    it('의견 목록 조회', async () => {
+      opinionRepository.find.mockResolvedValue([mockOpinion]);
+
+      const result = await opinionService.viewOpinions({
+        password: env.PASSWORD,
+        ...input,
+      });
+
+      expect(result.ok).toEqual(true);
+      expect(result.error).toEqual(undefined);
+      expect(result.opinions).toEqual([mockOpinion]);
+
+      expect(opinionRepository.find).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('의견 상세 조회 테스트', () => {
     const input = {
       id: mockOpinion.id,

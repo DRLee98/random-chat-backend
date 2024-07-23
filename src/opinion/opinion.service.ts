@@ -14,6 +14,10 @@ import { NotificationType } from 'src/notification/entities/notification.entity'
 
 import { MyOpinionsInput, MyOpinionsOutput } from './dtos/my-opinions.dto';
 import {
+  ViewOpinionsInput,
+  ViewOpinionsOutput,
+} from './dtos/view-opinions.dto';
+import {
   OpinionDetailInput,
   OpinionDetailOutput,
 } from './dtos/opinion-detail.dto';
@@ -80,6 +84,36 @@ export class OpinionService {
         input,
         this.opinionRepository,
         { user: { id: user.id } },
+      );
+
+      return {
+        opinions,
+        ...output,
+      };
+    } catch (error) {
+      return this.commonService.error(error);
+    }
+  }
+
+  async viewOpinions(input: ViewOpinionsInput): Promise<ViewOpinionsOutput> {
+    try {
+      if (!input.password)
+        return this.commonService.error(
+          '신고을 처리하기 위한 비밀번호를 입력해 주세요',
+        );
+      if (input.password !== this.configService.get('PASSWORD'))
+        return this.commonService.error('비밀번호가 맞지 않습니다');
+
+      const opinions = await this.opinionRepository.find({
+        order: {
+          createdAt: 'DESC',
+        },
+        ...this.commonService.paginationOption(input),
+      });
+
+      const output = await this.commonService.paginationOutput(
+        input,
+        this.opinionRepository,
       );
 
       return {

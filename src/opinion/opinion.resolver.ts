@@ -7,6 +7,10 @@ import { User } from 'src/user/entities/user.entity';
 
 import { MyOpinionsInput, MyOpinionsOutput } from './dtos/my-opinions.dto';
 import {
+  ViewOpinionsInput,
+  ViewOpinionsOutput,
+} from './dtos/view-opinions.dto';
+import {
   OpinionDetailInput,
   OpinionDetailOutput,
 } from './dtos/opinion-detail.dto';
@@ -36,6 +40,13 @@ export class OpinionResolver {
     @LoggedInUser() user: User,
   ): Promise<MyOpinionsOutput> {
     return this.opinionService.myOpinions(input, user);
+  }
+
+  @Query(() => ViewOpinionsOutput)
+  viewOpinions(
+    @Args('input') input: ViewOpinionsInput,
+  ): Promise<ViewOpinionsOutput> {
+    return this.opinionService.viewOpinions(input);
   }
 
   @Query(() => OpinionDetailOutput)
